@@ -62,6 +62,7 @@ namespace JSON_Viewer
 
         private async Task Load(Stream data)
         {
+            SearchState.Reset();
             Items.Clear();
             Items.Add(new TreeViewItem { Header = "Loading..." });
 
@@ -220,7 +221,10 @@ namespace JSON_Viewer
             SearchIn(CurrentDocument.RootElement);
 
             SearchState.FoundPaths = foundPaths.ToArray();
-            ExpandTo(foundPaths[0]);
+            SearchState.CurrentMatchIndex = 0;
+
+            if (foundPaths.Count > 0)
+                ExpandTo(foundPaths[0]);
 
             void MatchFound()
             {
@@ -261,10 +265,8 @@ namespace JSON_Viewer
 
                             elementStack.Pop();
                         }
-                        else
-                        {
-                            SearchIn(item.Value, item.Name);
-                        }
+
+                        SearchIn(item.Value, item.Name);
                     }
                 }
                 else if (SearchState.SearchInValues
@@ -275,6 +277,24 @@ namespace JSON_Viewer
                 }
 
                 elementStack.Pop();
+            }
+        }
+
+        private void NextMatch_Click(object sender, RoutedEventArgs e)
+        {
+            if (SearchState.CanGoToNextMatch)
+            {
+                SearchState.CurrentMatchIndex++;
+                ExpandTo(SearchState.FoundPaths[SearchState.CurrentMatchIndex]);
+            }
+        }
+
+        private void PreviousMatch_Click(object sender, RoutedEventArgs e)
+        {
+            if (SearchState.CanGoToPreviousMatch)
+            {
+                SearchState.CurrentMatchIndex--;
+                ExpandTo(SearchState.FoundPaths[SearchState.CurrentMatchIndex]);
             }
         }
     }

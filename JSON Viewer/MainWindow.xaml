@@ -39,14 +39,20 @@
                 <CheckBox IsChecked="{Binding SearchState.SearchInNames}">Search in property names</CheckBox>
                 <CheckBox IsChecked="{Binding SearchState.SearchInValues}">Search in values</CheckBox>
 
-                <TextBlock>
-                    Found
-                    <Run Text="{Binding SearchState.FoundPaths.Length, Mode=OneWay}" />
-                    matches
-                </TextBlock>
+                <StackPanel Orientation="Vertical" Visibility="{Binding SearchState.FoundPaths, Converter={local:NotNullToVisibilityConverter}}">
+                    <TextBlock Visibility="{Binding SearchState.AnyMatches, Converter={local:BoolToVisibilityConverter}}">
+                        Match
+                        <Run Text="{Binding SearchState.CurrentMatchIndexPlusOne, Mode=OneWay}" />
+                        /
+                        <Run Text="{Binding SearchState.FoundPaths.Length, Mode=OneWay}" />
+                    </TextBlock>
+                    <TextBlock Visibility="{Binding SearchState.AnyMatches, Converter={local:BoolToVisibilityConverter}, ConverterParameter=negate}">
+                        No matches found
+                    </TextBlock>
 
-                <Button Margin="0 5 0 3">Next</Button>
-                <Button>Previous</Button>
+                    <Button Margin="0 5 0 3" Click="PreviousMatch_Click" IsEnabled="{Binding SearchState.CanGoToPreviousMatch}">Previous</Button>
+                    <Button Click="NextMatch_Click" IsEnabled="{Binding SearchState.CanGoToNextMatch}">Next</Button>
+                </StackPanel>
             </StackPanel>
         </Border>
 
