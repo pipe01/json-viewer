@@ -3,21 +3,38 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:json="clr-namespace:Newtonsoft.Json.Linq;assembly=Newtonsoft.Json"
         xmlns:local="clr-namespace:JSON_Viewer"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="MainWindow" Height="450" Width="800" Initialized="Window_Initialized">
 
     <Window.Resources>
         <ContextMenu x:Key="ItemMenu">
             <ContextMenu.Items>
-                <MenuItem Header="asdasd" />
+                <MenuItem Header="asdasd" Click="MenuItem_Click" />
             </ContextMenu.Items>
         </ContextMenu>
     </Window.Resources>
     
-    <Grid>
-        <TreeView ItemsSource="{Binding Items}" AlternationCount="2">
+    <DockPanel>
+        <DockPanel.Background>
+            <LinearGradientBrush StartPoint="0 0" EndPoint="2000 0">
+                <LinearGradientBrush.GradientStops>
+                    <GradientStop Color="LightGray" />
+                    <GradientStop Color="White" />
+                </LinearGradientBrush.GradientStops>
+            </LinearGradientBrush>
+        </DockPanel.Background>
+        
+        <StackPanel DockPanel.Dock="Top" Height="28" Margin="3" HorizontalAlignment="Left">
+            <Button Width="24" Height="24" Margin="0 2" Background="White" Click="Open_Click">
+                <Image Source="{StaticResource Open}" />
+            </Button>
+        </StackPanel>
+
+        <TreeView Name="Tree" ItemsSource="{Binding Items}" DockPanel.Dock="Top" BorderBrush="Transparent" Padding="0 5 0 0">
+            <TreeView.CommandBindings>
+                <CommandBinding Command="ApplicationCommands.Copy" Executed="CommandBinding_Executed" />
+            </TreeView.CommandBindings>
         </TreeView>
-    </Grid>
+    </DockPanel>
 </Window>

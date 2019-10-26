@@ -4,6 +4,6 @@
              xmlns:local="clr-namespace:JSON_Viewer"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-         
+        <BitmapImage x:Key="Open" UriSource="Images/open.png" />
     </Application.Resources>
 </Application>
