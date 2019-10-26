@@ -4,7 +4,7 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:JSON_Viewer"
-        mc:Ignorable="d"
+        mc:Ignorable="d" d:DataContext="{d:DesignInstance local:MainWindow}"
         Title="MainWindow" Height="450" Width="800" Initialized="Window_Initialized">
 
     <Window.Resources>
@@ -24,12 +24,31 @@
                 </LinearGradientBrush.GradientStops>
             </LinearGradientBrush>
         </DockPanel.Background>
-        
+
         <StackPanel DockPanel.Dock="Top" Height="28" Margin="3" HorizontalAlignment="Left">
             <Button Width="24" Height="24" Margin="0 2" Background="White" Click="Open_Click">
                 <Image Source="{StaticResource Open}" />
             </Button>
         </StackPanel>
+
+        <Border DockPanel.Dock="Right" Width="200" Padding="5" Background="White" BorderThickness="1" BorderBrush="Gray">
+            <StackPanel Orientation="Vertical">
+                <TextBlock>Search for text:</TextBlock>
+                <TextBox FontSize="14" Text="{Binding SearchState.Query}" TextChanged="Query_TextChanged" Margin="0 5 0 10"></TextBox>
+
+                <CheckBox IsChecked="{Binding SearchState.SearchInNames}">Search in property names</CheckBox>
+                <CheckBox IsChecked="{Binding SearchState.SearchInValues}">Search in values</CheckBox>
+
+                <TextBlock>
+                    Found
+                    <Run Text="{Binding SearchState.FoundPaths.Length, Mode=OneWay}" />
+                    matches
+                </TextBlock>
+
+                <Button Margin="0 5 0 3">Next</Button>
+                <Button>Previous</Button>
+            </StackPanel>
+        </Border>
 
         <TreeView Name="Tree" ItemsSource="{Binding Items}" DockPanel.Dock="Top" BorderBrush="Transparent" Padding="0 5 0 0">
             <TreeView.CommandBindings>

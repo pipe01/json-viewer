@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
@@ -31,7 +32,10 @@ namespace JSON_Viewer
     {
         public ObservableCollection<TreeViewItem> Items { get; set; } = new ObservableCollection<TreeViewItem>();
 
+        public SearchState SearchState { get; set; } = new SearchState();
+
         private readonly ContextMenu ItemMenu;
+        private readonly DebounceDispatcher QueryDebouncer = new DebounceDispatcher();
 
         private JsonDocument CurrentDocument;
 
@@ -45,7 +49,9 @@ namespace JSON_Viewer
 
         private async void Window_Initialized(object sender, EventArgs e)
         {
+#if DEBUG
             await Load("data.json");
+#endif
         }
 
         private async Task Load(string path)
@@ -62,7 +68,7 @@ namespace JSON_Viewer
             CurrentDocument = await JsonDocument.ParseAsync(data);
             AddToken(CurrentDocument.RootElement, Items);
 
-            Items.RemoveAt(0);
+            Items.RemoveAt(0); //Remove "Loading" item
 
             void AddToken(JsonElement t, IList items, object name = null, string path = "")
             {
@@ -155,6 +161,120 @@ namespace JSON_Viewer
             if (dialog.ShowDialog() == true)
             {
                 await Load(dialog.FileName);
+            }
+        }
+
+        private void Query_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            QueryDebouncer.Debounce(1000, _ =>
+            {
+                SearchState.Query = ((TextBox)sender).Text;
+                UpdateSearch();
+            });
+        }
+
+        private void ExpandTo(string path)
+        {
+            string currPath = "";
+            ItemsControl currentContainer = Tree;
+            char c = default;
+
+            for (int i = 0; i < path.Length; i++)
+            {
+                c = path[i];
+
+                if (c == '.')
+                {
+                    Check();
+                }
+                else
+                {
+                    currPath += c;
+                }
+            }
+
+            Check(true);
+
+            void Check(bool highlight = false)
+            {
+                var node = currentContainer.Items.Cast<TreeViewItem>().SingleOrDefault(o => o.Tag is string str && str == currPath);
+
+                if (node != null)
+                {
+                    currentContainer = node;
+                    node.IsExpanded = true;
+
+                    currPath += c;
+
+                    if (highlight)
+                        node.IsSelected = true;
+                }
+            }
+        }
+
+        private void UpdateSearch()
+        {
+            var elementStack = new Stack<(JsonElement Element, object Key)>();
+            var foundPaths = new List<string>();
+
+            SearchIn(CurrentDocument.RootElement);
+
+            SearchState.FoundPaths = foundPaths.ToArray();
+            ExpandTo(foundPaths[0]);
+
+            void MatchFound()
+            {
+                var path = new StringBuilder();
+
+                foreach (var item in elementStack.Reverse())
+                {
+                    if (item.Key is int)
+                        path.Append(".[").Append(item.Key).Append("]");
+                    else
+                        path.Append(".").Append(item.Key);
+                }
+
+                foundPaths.Add(path.ToString());
+            }
+
+            void SearchIn(JsonElement element, object key = null)
+            {
+                elementStack.Push((element, key));
+
+                if (element.ValueKind == JsonValueKind.Array)
+                {
+                    int i = 0;
+                    foreach (var item in element.EnumerateArray())
+                    {
+                        SearchIn(item, i++);
+                    }
+                }
+                else if (element.ValueKind == JsonValueKind.Object)
+                {
+                    foreach (var item in element.EnumerateObject())
+                    {
+                        if (SearchState.SearchInNames && item.Name.Contains(SearchState.Query))
+                        {
+                            elementStack.Push((element, item.Name));
+
+                            MatchFound();
+
+                            elementStack.Pop();
+                        }
+                        else
+                        {
+                            SearchIn(item.Value, item.Name);
+                        }
+                    }
+                }
+                else if (SearchState.SearchInValues
+                     && ((element.ValueKind == JsonValueKind.String && element.GetString().Contains(SearchState.Query))
+                     || element.ToString().Contains(SearchState.Query)))
+                {
+                    MatchFound();
+                }
+
+                elementStack.Pop();
             }
         }
     }
