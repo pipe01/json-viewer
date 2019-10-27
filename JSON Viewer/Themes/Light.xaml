@@ -1,0 +1,16 @@
+﻿<ResourceDictionary 
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <SolidColorBrush x:Key="Fore" Color="Black" />
+    <LinearGradientBrush x:Key="WindowBack" StartPoint="0 0" EndPoint="2000 0">
+        <LinearGradientBrush.GradientStops>
+            <GradientStop Color="LightGray" />
+            <GradientStop Color="White" />
+        </LinearGradientBrush.GradientStops>
+    </LinearGradientBrush>
+    <SolidColorBrush x:Key="ToolBack" Color="White" />
+    <SolidColorBrush x:Key="ToolbarBtnBack" Color="White" />
+    <SolidColorBrush x:Key="TreeSelected" Color="Yellow" />
+
+</ResourceDictionary>

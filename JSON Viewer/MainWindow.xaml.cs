@@ -38,12 +38,17 @@ namespace JSON_Viewer
         private readonly DebounceDispatcher QueryDebouncer = new DebounceDispatcher();
         private readonly WeakReference<JsonContainer> PreviousMatchedElement = new WeakReference<JsonContainer>(null);
 
-        private JsonDocument CurrentDocument;
+        private readonly ResourceDictionary LightDic = new ResourceDictionary { Source = new Uri("pack://application:,,,/Themes/Light.xaml") };
+        private readonly ResourceDictionary DarkDic = new ResourceDictionary { Source = new Uri("pack://application:,,,/Themes/Dark.xaml") };
+
+    private JsonDocument CurrentDocument;
         private JsonContainer RootContainer;
         private bool HasUpdatedSearch; //Dirty hack
 
         public MainWindow()
         {
+            SetLightTheme();
+
             InitializeComponent();
 
             this.DataContext = this;
@@ -267,5 +272,21 @@ namespace JSON_Viewer
 
             SearchState.Reset();
         }
+
+        private void SetDarkTheme()
+        {
+            Resources.MergedDictionaries.Remove(LightDic);
+            Resources.MergedDictionaries.Add(DarkDic);
+        }
+
+        private void Dark_Checked(object sender, RoutedEventArgs e) => SetDarkTheme();
+
+        private void SetLightTheme()
+        {
+            Resources.MergedDictionaries.Remove(DarkDic);
+            Resources.MergedDictionaries.Add(LightDic);
+        }
+
+        private void Dark_Unchecked(object sender, RoutedEventArgs e) => SetLightTheme();
     }
 }
