@@ -40,6 +40,7 @@ namespace JSON_Viewer
 
         private JsonDocument CurrentDocument;
         private JsonContainer RootContainer;
+        private bool HasUpdatedSearch; //Dirty hack
 
         public MainWindow()
         {
@@ -147,6 +148,12 @@ namespace JSON_Viewer
 
         private void UpdateSearch()
         {
+            if (!HasUpdatedSearch)
+            {
+                HasUpdatedSearch = true;
+                return;
+            }
+
             if (CurrentDocument == null)
             {
                 SearchState.Reset();
