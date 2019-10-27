@@ -5,9 +5,11 @@
     <TargetFramework>netcoreapp3.0</TargetFramework>
     <RootNamespace>JSON_Viewer</RootNamespace>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>1200px-JSON_vector_logo.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Images\icon.png" />
     <None Remove="Images\open.png" />
   </ItemGroup>
 
@@ -17,6 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Resource Include="Images\icon.png" />
     <Resource Include="Images\open.png" />
   </ItemGroup>
 
