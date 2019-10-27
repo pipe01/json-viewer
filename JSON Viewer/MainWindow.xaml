@@ -4,7 +4,9 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:JSON_Viewer"
-        mc:Ignorable="d" d:DataContext="{d:DesignInstance local:MainWindow}" Icon="{StaticResource Icon}"
+        xmlns:conv="clr-namespace:JSON_Viewer.Converters"
+        xmlns:json="clr-namespace:System.Text.Json;assembly=System.Text.Json"
+        mc:Ignorable="d" Icon="{StaticResource Icon}"
         Title="MainWindow" Height="450" Width="800" Initialized="Window_Initialized">
 
     <Window.Resources>
@@ -57,10 +59,24 @@
             </StackPanel>
         </Border>
 
-        <TreeView Name="Tree" ItemsSource="{Binding Items}" DockPanel.Dock="Top" BorderBrush="Transparent" Padding="0 5 0 0">
+        <TreeView Name="Tree" ItemsSource="{Binding Items}" DockPanel.Dock="Top" BorderBrush="Transparent" Padding="0 5 0 0"
+                  VirtualizingPanel.IsVirtualizing="True">
             <TreeView.CommandBindings>
                 <CommandBinding Command="ApplicationCommands.Copy" Executed="CommandBinding_Executed" />
             </TreeView.CommandBindings>
+
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="TreeViewItem">
+                    <Setter Property="IsExpanded" Value="{Binding IsExpanded}" />
+                    <Setter Property="IsSelected" Value="{Binding IsSelected}" />
+                </Style>
+            </TreeView.ItemContainerStyle>
+            
+            <TreeView.ItemTemplate>
+                <HierarchicalDataTemplate ItemsSource="{Binding Path=., Converter={conv:JsonElementToChildrenConverter}}">
+                    <TextBlock Text="{Binding Path=., Converter={conv:JsonElementToStringConverter}, ConverterParameter={RelativeSource Mode=PreviousData}}"></TextBlock>
+                </HierarchicalDataTemplate>
+            </TreeView.ItemTemplate>
         </TreeView>
     </DockPanel>
 </Window>

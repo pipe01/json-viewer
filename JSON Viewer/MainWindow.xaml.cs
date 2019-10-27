@@ -31,21 +31,20 @@ namespace JSON_Viewer
     /// </summary>
     public partial class MainWindow : Window
     {
-        public ObservableCollection<TreeViewItem> Items { get; set; } = new ObservableCollection<TreeViewItem>();
+        public ObservableCollection<JsonContainer> Items { get; set; } = new ObservableCollection<JsonContainer>();
 
         public SearchState SearchState { get; set; } = new SearchState();
 
-        private readonly ContextMenu ItemMenu;
         private readonly DebounceDispatcher QueryDebouncer = new DebounceDispatcher();
 
         private JsonDocument CurrentDocument;
+        private JsonContainer RootContainer;
 
         public MainWindow()
         {
             InitializeComponent();
 
             this.DataContext = this;
-            this.ItemMenu = FindResource(nameof(ItemMenu)) as ContextMenu;
         }
 
         private async void Window_Initialized(object sender, EventArgs e)
@@ -65,83 +64,11 @@ namespace JSON_Viewer
         {
             SearchState.Reset();
             Items.Clear();
-            Items.Add(new TreeViewItem { Header = "Loading..." });
 
             CurrentDocument = await JsonDocument.ParseAsync(data);
-            AddToken(CurrentDocument.RootElement, Items);
+            RootContainer = new JsonContainer(CurrentDocument.RootElement, "");
 
-            Items.RemoveAt(0); //Remove "Loading" item
-
-            void AddToken(JsonElement t, IList items, object name = null, string path = "")
-            {
-                var item = new TreeViewItem();
-
-                if (LoadItem(false))
-                {
-                    item.Items.Add(null);
-
-                    item.Expanded += delegate
-                    {
-                        LoadItem(true);
-                    };
-                }
-
-                item.ContextMenu = ItemMenu;
-                items.Add(item);
-
-                //Returns true if the token has children
-                bool LoadItem(bool loadChildren)
-                {
-                    bool hasChildren = false;
-
-                    loadChildren = loadChildren && item.Items.Count == 1 && item.Items[0] == null;
-
-                    switch (t.ValueKind)
-                    {
-                        case JsonValueKind.Array:
-                            var arrLen = t.GetArrayLength();
-                            item.Header = $"[{arrLen}]";
-
-                            if (loadChildren)
-                            {
-                                int i = 0;
-                                foreach (var arrItem in t.EnumerateArray())
-                                {
-                                    AddToken(arrItem, item.Items, i, path + $".[{i}]");
-                                    i++;
-                                }
-                            }
-
-                            hasChildren = arrLen > 0;
-                            break;
-                        case JsonValueKind.Object:
-                            item.Header = "{...}";
-
-                            if (loadChildren)
-                            {
-                                foreach (var objItem in t.EnumerateObject())
-                                {
-                                    AddToken(objItem.Value, item.Items, objItem.Name, path + $".{objItem.Name}");
-                                }
-                            }
-
-                            hasChildren = t.EnumerateObject().MoveNext();
-                            break;
-                        default:
-                            item.Header = JsonSerializer.Serialize(t);
-                            break;
-                    }
-
-                    if (name != null)
-                        item.Header = (name is int ? name : $"\"{name}\"") + ":   " + item.Header;
-
-                    if (loadChildren)
-                        item.Items.RemoveAt(0);
-
-                    item.Tag = path;
-                    return hasChildren;
-                }
-            }
+            Items.Add(RootContainer);
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
@@ -175,40 +102,36 @@ namespace JSON_Viewer
         private void ExpandTo(string path)
         {
             string currPath = "";
-            ItemsControl currentContainer = Tree;
-            char c = default;
+            var currentContainer = RootContainer;
+
+            RootContainer.IsExpanded = true;
 
             for (int i = 0; i < path.Length; i++)
             {
-                c = path[i];
+                char c = path[i];
 
                 if (c == '.')
                 {
                     Check();
                 }
-                else
-                {
-                    currPath += c;
-                }
+
+                currPath += c;
             }
 
             Check(true);
 
             void Check(bool highlight = false)
             {
-                var node = currentContainer.Items.Cast<TreeViewItem>().SingleOrDefault(o => o.Tag is string str && str == currPath);
-
-                if (node != null)
+                foreach (JsonContainer item in currentContainer.Children)
                 {
-                    currentContainer = node;
-                    node.IsExpanded = true;
-
-                    currPath += c;
-
-                    if (highlight)
+                    if (item.Path == currPath)
                     {
-                        node.IsSelected = true;
-                        node.BringIntoView();
+                        item.IsExpanded = true;
+
+                        if (highlight)
+                            item.IsSelected = true;
+
+                        currentContainer = item;
                     }
                 }
             }
@@ -216,7 +139,11 @@ namespace JSON_Viewer
 
         private void UpdateSearch()
         {
-            Debug.WriteLine("Update search " + SearchState.Query);
+            if (CurrentDocument == null)
+            {
+                SearchState.Reset();
+                return;
+            }
 
             var elementStack = new Stack<(JsonElement Element, object Key)>();
             var foundPaths = new List<string>();
@@ -237,7 +164,7 @@ namespace JSON_Viewer
                 {
                     if (item.Key is int)
                         path.Append(".[").Append(item.Key).Append("]");
-                    else
+                    else if (item.Key != null)
                         path.Append(".").Append(item.Key);
                 }
 
@@ -303,6 +230,16 @@ namespace JSON_Viewer
                 SearchState.CurrentMatchIndex--;
                 ExpandTo(SearchState.FoundPaths[SearchState.CurrentMatchIndex]);
             }
+        }
+
+        private void TextBlock_Initialized(object sender, EventArgs e)
+        {
+
+        }
+
+        private void FrameworkElement_Initialized(object sender, EventArgs e)
+        {
+
         }
     }
 }
