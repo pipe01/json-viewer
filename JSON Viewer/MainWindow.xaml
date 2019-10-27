@@ -69,6 +69,7 @@
                 <Style TargetType="TreeViewItem">
                     <Setter Property="IsExpanded" Value="{Binding IsExpanded}" />
                     <Setter Property="IsSelected" Value="{Binding IsSelected}" />
+                    <Setter Property="local:TreeViewItemHelper.BringSelectedItemIntoView" Value="True" />
                 </Style>
             </TreeView.ItemContainerStyle>
             
