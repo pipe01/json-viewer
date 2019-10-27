@@ -36,6 +36,7 @@ namespace JSON_Viewer
         public SearchState SearchState { get; set; } = new SearchState();
 
         private readonly DebounceDispatcher QueryDebouncer = new DebounceDispatcher();
+        private readonly WeakReference<JsonContainer> PreviousMatchedElement = new WeakReference<JsonContainer>(null);
 
         private JsonDocument CurrentDocument;
         private JsonContainer RootContainer;
@@ -129,7 +130,14 @@ namespace JSON_Viewer
                         item.IsExpanded = true;
 
                         if (highlight)
+                        {
                             item.IsSelected = true;
+
+                            if (PreviousMatchedElement.TryGetTarget(out var el))
+                                el.IsSelected = false;
+
+                            PreviousMatchedElement.SetTarget(item);
+                        }
 
                         currentContainer = item;
                     }
@@ -240,6 +248,17 @@ namespace JSON_Viewer
         private void FrameworkElement_Initialized(object sender, EventArgs e)
         {
 
+        }
+
+        private void ClearSearch_Click(object sender, RoutedEventArgs e)
+        {
+            if (PreviousMatchedElement.TryGetTarget(out var j))
+            {
+                j.IsSelected = false;
+                PreviousMatchedElement.SetTarget(null);
+            }
+
+            SearchState.Reset();
         }
     }
 }

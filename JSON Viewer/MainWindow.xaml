@@ -54,7 +54,9 @@
                     </TextBlock>
 
                     <Button Margin="0 5 0 3" Click="PreviousMatch_Click" IsEnabled="{Binding SearchState.CanGoToPreviousMatch}">Previous</Button>
-                    <Button Click="NextMatch_Click" IsEnabled="{Binding SearchState.CanGoToNextMatch}">Next</Button>
+                    <Button Margin="0 0 0 10" Click="NextMatch_Click" IsEnabled="{Binding SearchState.CanGoToNextMatch}">Next</Button>
+                    
+                    <Button Click="ClearSearch_Click">Clear search</Button>
                 </StackPanel>
             </StackPanel>
         </Border>
@@ -68,8 +70,16 @@
             <TreeView.ItemContainerStyle>
                 <Style TargetType="TreeViewItem">
                     <Setter Property="IsExpanded" Value="{Binding IsExpanded}" />
-                    <Setter Property="IsSelected" Value="{Binding IsSelected}" />
+                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=OneWay}" />
                     <Setter Property="local:TreeViewItemHelper.BringSelectedItemIntoView" Value="True" />
+
+                    <Style.Triggers>
+                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                            <DataTrigger.Setters>
+                                <Setter Property="Background" Value="Yellow" />
+                            </DataTrigger.Setters>
+                        </DataTrigger>
+                    </Style.Triggers>
                 </Style>
             </TreeView.ItemContainerStyle>
             
