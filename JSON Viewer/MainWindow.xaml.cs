@@ -108,6 +108,8 @@ namespace JSON_Viewer
 
         private void ExpandTo(string path)
         {
+            Debug.WriteLine("Highlight: " + path);
+
             string currPath = "";
             var currentContainer = RootContainer;
 
@@ -137,15 +139,17 @@ namespace JSON_Viewer
 
                         if (highlight)
                         {
-                            item.IsSelected = true;
-
                             if (PreviousMatchedElement.TryGetTarget(out var el))
                                 el.IsSelected = false;
+
+                            item.IsSelected = true;
 
                             PreviousMatchedElement.SetTarget(item);
                         }
 
                         currentContainer = item;
+
+                        break;
                     }
                 }
             }
