@@ -34,10 +34,11 @@
         <Border DockPanel.Dock="Right" Width="200" Padding="5" Background="White" BorderThickness="1" BorderBrush="Gray">
             <StackPanel Orientation="Vertical">
                 <TextBlock>Search for text:</TextBlock>
-                <TextBox FontSize="14" Text="{Binding SearchState.Query}" TextChanged="Query_TextChanged" Margin="0 5 0 10"></TextBox>
+                <TextBox FontSize="14" Text="{Binding SearchState.Query, UpdateSourceTrigger=PropertyChanged}" TextChanged="UpdateSearchDebounce" Margin="0 5 0 10"></TextBox>
 
-                <CheckBox IsChecked="{Binding SearchState.SearchInNames}">Search in property names</CheckBox>
-                <CheckBox IsChecked="{Binding SearchState.SearchInValues}">Search in values</CheckBox>
+                <CheckBox IsChecked="{Binding SearchState.SearchInNames}" Checked="UpdateSearchDebounce" Unchecked="UpdateSearchDebounce">Search in property names</CheckBox>
+                <CheckBox IsChecked="{Binding SearchState.SearchInValues}" Checked="UpdateSearchDebounce" Unchecked="UpdateSearchDebounce">Search in values</CheckBox>
+                <CheckBox IsChecked="{Binding SearchState.RegexQuery}" Checked="UpdateSearchDebounce" Unchecked="UpdateSearchDebounce">Enable regex</CheckBox>
 
                 <StackPanel Orientation="Vertical" Visibility="{Binding SearchState.FoundPaths, Converter={local:NotNullToVisibilityConverter}}">
                     <TextBlock Visibility="{Binding SearchState.AnyMatches, Converter={local:BoolToVisibilityConverter}}">

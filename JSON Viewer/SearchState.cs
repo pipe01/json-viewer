@@ -8,6 +8,7 @@ namespace JSON_Viewer
 
         public bool SearchInNames { get; set; } = true;
         public bool SearchInValues { get; set; } = true;
+        public bool RegexQuery { get; set; }
 
         public string[] FoundPaths { get; set; }
         public int CurrentMatchIndex { get; set; }

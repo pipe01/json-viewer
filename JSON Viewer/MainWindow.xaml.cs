@@ -10,6 +10,7 @@ using System.Net;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -165,13 +166,10 @@ namespace JSON_Viewer
             }
         }
 
-        private void Query_TextChanged(object sender, TextChangedEventArgs e)
+        private void UpdateSearchDebounce(object sender, TextChangedEventArgs e) => UpdateSearchDebounce(sender, (EventArgs)e);
+        private void UpdateSearchDebounce(object sender, EventArgs e)
         {
-            QueryDebouncer.Debounce(1000, _ =>
-            {
-                SearchState.Query = ((TextBox)sender).Text;
-                UpdateSearch();
-            });
+            QueryDebouncer.Debounce(500, _ => UpdateSearch());
         }
 
         private void ExpandTo(string path)
@@ -208,13 +206,18 @@ namespace JSON_Viewer
                     currPath += c;
 
                     if (highlight)
+                    {
                         node.IsSelected = true;
+                        node.BringIntoView();
+                    }
                 }
             }
         }
 
         private void UpdateSearch()
         {
+            Debug.WriteLine("Update search " + SearchState.Query);
+
             var elementStack = new Stack<(JsonElement Element, object Key)>();
             var foundPaths = new List<string>();
 
@@ -241,6 +244,10 @@ namespace JSON_Viewer
                 foundPaths.Add(path.ToString());
             }
 
+            bool SearchString(string str) => SearchState.Query == null ? false : SearchState.RegexQuery
+                    ? Regex.IsMatch(str, SearchState.Query)
+                    : str.Contains(SearchState.Query);
+
             void SearchIn(JsonElement element, object key = null)
             {
                 elementStack.Push((element, key));
@@ -257,7 +264,7 @@ namespace JSON_Viewer
                 {
                     foreach (var item in element.EnumerateObject())
                     {
-                        if (SearchState.SearchInNames && item.Name.Contains(SearchState.Query))
+                        if (SearchState.SearchInNames && SearchString(item.Name))
                         {
                             elementStack.Push((element, item.Name));
 
@@ -270,8 +277,8 @@ namespace JSON_Viewer
                     }
                 }
                 else if (SearchState.SearchInValues
-                     && ((element.ValueKind == JsonValueKind.String && element.GetString().Contains(SearchState.Query))
-                     || element.ToString().Contains(SearchState.Query)))
+                     && ((element.ValueKind == JsonValueKind.String && SearchString(element.GetString()))
+                     || SearchString(element.ToString())))
                 {
                     MatchFound();
                 }
