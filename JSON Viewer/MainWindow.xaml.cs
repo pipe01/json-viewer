@@ -48,31 +48,22 @@ namespace JSON_Viewer
 
         private readonly DebounceDispatcher QueryDebouncer = new DebounceDispatcher();
         private readonly WeakReference<JsonContainer> PreviousMatchedElement = new WeakReference<JsonContainer>(null);
-        private readonly Configuration Config;
         private readonly DispatcherTimer MemoryTimer;
 
         private readonly ResourceDictionary LightDic = new ResourceDictionary { Source = new Uri("pack://application:,,,/Themes/Light.xaml") };
         private readonly ResourceDictionary DarkDic = new ResourceDictionary { Source = new Uri("pack://application:,,,/Themes/Dark.xaml") };
 
+        private Configuration Config;
         private JsonDocument CurrentDocument;
         private JsonContainer RootContainer;
         private bool HasUpdatedSearch; //Dirty hack
+        private int MemoryTimerCounter;
 
         public event PropertyChangedEventHandler PropertyChanged;
 
         public MainWindow()
         {
-            Config = ConfigurationManager.OpenExeConfiguration(Assembly.GetExecutingAssembly().Location);
-            AutoSearch = bool.Parse(Config.AppSettings.Settings["AutoSearch"].Value);
-
-            string theme = Config.AppSettings.Settings["Theme"].Value;
-
-            if (theme == "Light" || theme == null)
-                SetLightTheme();
-            else if (theme == "Dark")
-                SetDarkTheme();
-            else
-                throw new Exception("Invalid theme");
+            LoadConfig();
 
             InitializeComponent();
 
@@ -82,12 +73,30 @@ namespace JSON_Viewer
             MemoryTimer.Start();
         }
 
+        private void LoadConfig()
+        {
+            Config = ConfigurationManager.OpenExeConfiguration(Assembly.GetExecutingAssembly().Location);
+            AutoSearch = bool.Parse(Config.AppSettings.Settings["AutoSearch"].Value);
+
+            if (!AutoSearch)
+                HasUpdatedSearch = true;
+
+            string theme = Config.AppSettings.Settings["Theme"].Value;
+
+            if (theme == "Light" || theme == null)
+                SetLightTheme();
+            else if (theme == "Dark")
+                SetDarkTheme();
+            else
+                throw new Exception("Invalid theme");
+        }
+
         private void MemoryTimer_Elapsed(object sender, EventArgs e)
         {
             if (!this.IsActive)
                 return;
 
-            UsedMemoryMB = (int)(GC.GetTotalMemory(true) / (1024 * 1024));
+            UsedMemoryMB = (int)(GC.GetTotalMemory(MemoryTimerCounter++ % 3 == 0) / (1024 * 1024));
         }
 
         private async void Window_Initialized(object sender, EventArgs e)
@@ -151,6 +160,7 @@ namespace JSON_Viewer
 
         private void Query_Changed(object sender, TextChangedEventArgs e)
         {
+            Debug.WriteLine("Changed");
             SearchState.Reset();
             UpdateSearchDebounce(sender, e);
         }
