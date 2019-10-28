@@ -4,10 +4,12 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel;
+using System.Configuration;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Net;
+using System.Reflection;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
@@ -36,9 +38,11 @@ namespace JSON_Viewer
 
         public SearchState SearchState { get; set; } = new SearchState();
         public string SelectedPath { get; set; } = "";
+        public bool IsDarkThemed { get; set; }
 
         private readonly DebounceDispatcher QueryDebouncer = new DebounceDispatcher();
         private readonly WeakReference<JsonContainer> PreviousMatchedElement = new WeakReference<JsonContainer>(null);
+        private readonly Configuration Config;
 
         private readonly ResourceDictionary LightDic = new ResourceDictionary { Source = new Uri("pack://application:,,,/Themes/Light.xaml") };
         private readonly ResourceDictionary DarkDic = new ResourceDictionary { Source = new Uri("pack://application:,,,/Themes/Dark.xaml") };
@@ -51,7 +55,15 @@ namespace JSON_Viewer
 
         public MainWindow()
         {
-            SetLightTheme();
+            Config = ConfigurationManager.OpenExeConfiguration(Assembly.GetExecutingAssembly().Location);
+            string theme = Config.AppSettings.Settings["Theme"].Value;
+
+            if (theme == "Light" || theme == null)
+                SetLightTheme();
+            else if (theme == "Dark")
+                SetDarkTheme();
+            else
+                throw new Exception("Invalid theme");
 
             InitializeComponent();
 
@@ -281,6 +293,10 @@ namespace JSON_Viewer
 
         private void SetDarkTheme()
         {
+            IsDarkThemed = true;
+            Config.AppSettings.Settings["Theme"].Value = "Dark";
+            Config.Save();
+
             Resources.MergedDictionaries.Remove(LightDic);
             Resources.MergedDictionaries.Add(DarkDic);
         }
@@ -289,6 +305,10 @@ namespace JSON_Viewer
 
         private void SetLightTheme()
         {
+            IsDarkThemed = false;
+            Config.AppSettings.Settings["Theme"].Value = "Light";
+            Config.Save();
+
             Resources.MergedDictionaries.Remove(DarkDic);
             Resources.MergedDictionaries.Add(LightDic);
         }

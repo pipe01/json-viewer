@@ -12,6 +12,6 @@
     <SolidColorBrush x:Key="ToolBack" Color="White" />
     <SolidColorBrush x:Key="ToolbarBtnBack" Color="White" />
     <SolidColorBrush x:Key="TreeSelected" Color="Yellow" />
-    <!--<SolidColorBrush x:Key="StatusBarBack" Color="" />-->
+    <SolidColorBrush x:Key="StatusBarBack" Color="Transparent" />
 
 </ResourceDictionary>
