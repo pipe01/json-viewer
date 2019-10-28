@@ -49,7 +49,7 @@
             </StatusBarItem>
 
             <StatusBarItem HorizontalAlignment="Right">
-                <TextBlock Foreground="{DynamicResource Fore}">
+                <TextBlock Foreground="{DynamicResource Fore}" ToolTip="Memory usage">
                     <Run Text="{Binding UsedMemoryMB}" />
                     MB used
                 </TextBlock>
