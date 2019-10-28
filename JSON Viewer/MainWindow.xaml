@@ -31,6 +31,10 @@
 
         <StatusBar DockPanel.Dock="Bottom" Background="{DynamicResource StatusBarBack}">
             <StatusBarItem>
+                <TextBlock Text="{Binding Status}" Foreground="{DynamicResource Fore}" />
+            </StatusBarItem>
+            
+            <StatusBarItem>
                 <StatusBarItem.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Copy" Click="CopyPath_Click" />
@@ -38,6 +42,13 @@
                 </StatusBarItem.ContextMenu>
                 
                 <TextBlock Text="{Binding SelectedPath}" Foreground="{DynamicResource Fore}"></TextBlock>
+            </StatusBarItem>
+
+            <StatusBarItem HorizontalAlignment="Right">
+                <TextBlock Foreground="{DynamicResource Fore}">
+                    <Run Text="{Binding UsedMemoryMB}" />
+                    MB used
+                </TextBlock>
             </StatusBarItem>
         </StatusBar>
 
@@ -64,7 +75,7 @@
                     <Button Margin="0 5 0 3" Click="PreviousMatch_Click" IsEnabled="{Binding SearchState.CanGoToPreviousMatch}">Previous</Button>
                     <Button Margin="0 0 0 10" Click="NextMatch_Click" IsEnabled="{Binding SearchState.CanGoToNextMatch}">Next</Button>
                     
-                    <Button Click="ClearSearch_Click">Clear search</Button>
+                    <Button Click="ClearSearch_Click">Clear search results</Button>
                 </StackPanel>
             </StackPanel>
         </Border>

@@ -24,6 +24,7 @@ using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
+using System.Windows.Threading;
 
 #pragma warning disable RCS1031
 
@@ -38,11 +39,14 @@ namespace JSON_Viewer
 
         public SearchState SearchState { get; set; } = new SearchState();
         public string SelectedPath { get; set; } = "";
+        public string Status { get; set; } = "";
         public bool IsDarkThemed { get; set; }
+        public int UsedMemoryMB { get; set; }
 
         private readonly DebounceDispatcher QueryDebouncer = new DebounceDispatcher();
         private readonly WeakReference<JsonContainer> PreviousMatchedElement = new WeakReference<JsonContainer>(null);
         private readonly Configuration Config;
+        private readonly DispatcherTimer MemoryTimer;
 
         private readonly ResourceDictionary LightDic = new ResourceDictionary { Source = new Uri("pack://application:,,,/Themes/Light.xaml") };
         private readonly ResourceDictionary DarkDic = new ResourceDictionary { Source = new Uri("pack://application:,,,/Themes/Dark.xaml") };
@@ -68,6 +72,17 @@ namespace JSON_Viewer
             InitializeComponent();
 
             this.DataContext = this;
+
+            MemoryTimer = new DispatcherTimer(TimeSpan.FromSeconds(1), DispatcherPriority.DataBind, MemoryTimer_Elapsed, Dispatcher);
+            MemoryTimer.Start();
+        }
+
+        private void MemoryTimer_Elapsed(object sender, EventArgs e)
+        {
+            if (!this.IsActive)
+                return;
+
+            UsedMemoryMB = (int)(GC.GetTotalMemory(true) / (1024 * 1024));
         }
 
         private async void Window_Initialized(object sender, EventArgs e)
@@ -88,10 +103,17 @@ namespace JSON_Viewer
             SearchState.Reset();
             Items.Clear();
 
+            this.Cursor = Cursors.AppStarting;
+            this.Status = "Loading...";
+
+            CurrentDocument?.Dispose();
             CurrentDocument = await JsonDocument.ParseAsync(data);
             RootContainer = new JsonContainer(CurrentDocument.RootElement, "");
 
             Items.Add(RootContainer);
+
+            this.Cursor = null;
+            this.Status = null;
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
