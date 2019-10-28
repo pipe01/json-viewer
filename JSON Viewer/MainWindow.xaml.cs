@@ -39,9 +39,12 @@ namespace JSON_Viewer
 
         public SearchState SearchState { get; set; } = new SearchState();
         public string SelectedPath { get; set; } = "";
-        public string Status { get; set; } = "";
         public bool IsDarkThemed { get; set; }
+        public bool AutoSearch { get; set; }
+
         public int UsedMemoryMB { get; set; }
+        public string Status { get; set; } = "";
+        public bool IsLoading { get; set; }
 
         private readonly DebounceDispatcher QueryDebouncer = new DebounceDispatcher();
         private readonly WeakReference<JsonContainer> PreviousMatchedElement = new WeakReference<JsonContainer>(null);
@@ -60,6 +63,8 @@ namespace JSON_Viewer
         public MainWindow()
         {
             Config = ConfigurationManager.OpenExeConfiguration(Assembly.GetExecutingAssembly().Location);
+            AutoSearch = bool.Parse(Config.AppSettings.Settings["AutoSearch"].Value);
+
             string theme = Config.AppSettings.Settings["Theme"].Value;
 
             if (theme == "Light" || theme == null)
@@ -95,6 +100,10 @@ namespace JSON_Viewer
         private async Task Load(string path)
         {
             using var file = File.OpenRead(path);
+
+            if (file.Length > 50 * 1024 * 1024)
+                AutoSearch = false; //Automatically disable auto search for files bigger than 50MB
+
             await Load(file);
         }
 
@@ -104,7 +113,8 @@ namespace JSON_Viewer
             Items.Clear();
 
             this.Cursor = Cursors.AppStarting;
-            this.Status = "Loading...";
+            Status = "Loading...";
+            IsLoading = true;
 
             CurrentDocument?.Dispose();
             CurrentDocument = await JsonDocument.ParseAsync(data);
@@ -113,7 +123,8 @@ namespace JSON_Viewer
             Items.Add(RootContainer);
 
             this.Cursor = null;
-            this.Status = null;
+            Status = null;
+            IsLoading = false;
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
@@ -141,7 +152,8 @@ namespace JSON_Viewer
         private void UpdateSearchDebounce(object sender, TextChangedEventArgs e) => UpdateSearchDebounce(sender, (EventArgs)e);
         private void UpdateSearchDebounce(object sender, EventArgs e)
         {
-            QueryDebouncer.Debounce(500, _ => UpdateSearch());
+            if (AutoSearch)
+                QueryDebouncer.Debounce(500, async _ => await UpdateSearch());
         }
 
         private void ExpandTo(string path)
@@ -191,7 +203,7 @@ namespace JSON_Viewer
             }
         }
 
-        private void UpdateSearch()
+        private async Task UpdateSearch()
         {
             if (!HasUpdatedSearch)
             {
@@ -208,7 +220,13 @@ namespace JSON_Viewer
             var elementStack = new Stack<(JsonElement Element, object Key)>();
             var foundPaths = new List<string>();
 
-            SearchIn(CurrentDocument.RootElement);
+            Status = "Searching...";
+            IsLoading = true;
+
+            await Task.Run(() => SearchIn(CurrentDocument.RootElement));
+
+            Status = null;
+            IsLoading = false;
 
             SearchState.FoundPaths = foundPaths.ToArray();
             SearchState.CurrentMatchIndex = 0;
@@ -345,6 +363,17 @@ namespace JSON_Viewer
         private void CopyPath_Click(object sender, RoutedEventArgs e)
         {
             Clipboard.SetText(SelectedPath);
+        }
+
+        private void UpdateAutoSearch(object sender, RoutedEventArgs e)
+        {
+            Config.AppSettings.Settings["AutoSearch"].Value = AutoSearch.ToString();
+            Config.Save();
+        }
+
+        private async void Search_Click(object sender, RoutedEventArgs e)
+        {
+            await UpdateSearch();
         }
     }
 }

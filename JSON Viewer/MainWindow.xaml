@@ -5,7 +5,6 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:JSON_Viewer"
         xmlns:conv="clr-namespace:JSON_Viewer.Converters"
-        xmlns:json="clr-namespace:System.Text.Json;assembly=System.Text.Json"
         mc:Ignorable="d" Icon="{StaticResource Icon}" Background="{DynamicResource WindowBack}" Foreground="{DynamicResource Fore}"
         Title="Piped JSON Viewer" Height="450" Width="800" Initialized="Window_Initialized">
 
@@ -30,6 +29,10 @@
         </StackPanel>
 
         <StatusBar DockPanel.Dock="Bottom" Background="{DynamicResource StatusBarBack}">
+            <StatusBarItem Visibility="{Binding IsLoading, Converter={local:BoolToVisibilityConverter}}">
+                <ProgressBar IsIndeterminate="True" Width="120" Height="15" />
+            </StatusBarItem>
+
             <StatusBarItem>
                 <TextBlock Text="{Binding Status}" Foreground="{DynamicResource Fore}" />
             </StatusBarItem>
@@ -55,11 +58,15 @@
         <Border DockPanel.Dock="Right" Width="200" Padding="5" BorderThickness="1" BorderBrush="Gray">
             <StackPanel Orientation="Vertical">
                 <TextBlock>Search for text:</TextBlock>
-                <TextBox FontSize="14" Text="{Binding SearchState.Query, UpdateSourceTrigger=PropertyChanged}" TextChanged="UpdateSearchDebounce" Margin="0 5 0 10"></TextBox>
-
-                <CheckBox IsChecked="{Binding SearchState.SearchInNames}" Checked="UpdateSearchDebounce" Unchecked="UpdateSearchDebounce" Foreground="{DynamicResource Fore}">Search in property names</CheckBox>
+                <TextBox FontSize="14" Text="{Binding SearchState.Query, UpdateSourceTrigger=PropertyChanged}" TextChanged="UpdateSearchDebounce" Margin="0 5 0 0"></TextBox>
+                <Button HorizontalAlignment="Right" Margin="0 5 0 0" Width="60" Height="25" Click="Search_Click" IsEnabled="{Binding AutoSearch, Converter={conv:NegateBoolConverter}}">
+                    Search
+                </Button>
+                
+                <CheckBox IsChecked="{Binding SearchState.SearchInNames}" Checked="UpdateSearchDebounce" Unchecked="UpdateSearchDebounce" Foreground="{DynamicResource Fore}" Margin="0 10 0 0">Search in property names</CheckBox>
                 <CheckBox IsChecked="{Binding SearchState.SearchInValues}" Checked="UpdateSearchDebounce" Unchecked="UpdateSearchDebounce" Foreground="{DynamicResource Fore}">Search in values</CheckBox>
                 <CheckBox IsChecked="{Binding SearchState.RegexQuery}" Checked="UpdateSearchDebounce" Unchecked="UpdateSearchDebounce" Foreground="{DynamicResource Fore}">Enable regex</CheckBox>
+                <CheckBox IsChecked="{Binding AutoSearch}" Checked="UpdateAutoSearch" Unchecked="UpdateAutoSearch" Foreground="{DynamicResource Fore}">Automatically search</CheckBox>
 
                 <StackPanel Orientation="Vertical" Visibility="{Binding SearchState.FoundPaths, Converter={local:NotNullToVisibilityConverter}}">
                     <TextBlock Visibility="{Binding SearchState.AnyMatches, Converter={local:BoolToVisibilityConverter}}">
