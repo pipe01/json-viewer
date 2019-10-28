@@ -149,7 +149,12 @@ namespace JSON_Viewer
             }
         }
 
-        private void UpdateSearchDebounce(object sender, TextChangedEventArgs e) => UpdateSearchDebounce(sender, (EventArgs)e);
+        private void Query_Changed(object sender, TextChangedEventArgs e)
+        {
+            SearchState.Reset();
+            UpdateSearchDebounce(sender, e);
+        }
+
         private void UpdateSearchDebounce(object sender, EventArgs e)
         {
             if (AutoSearch)
@@ -220,10 +225,16 @@ namespace JSON_Viewer
             var elementStack = new Stack<(JsonElement Element, object Key)>();
             var foundPaths = new List<string>();
 
+            bool done = false;
+
             Status = "Searching...";
-            IsLoading = true;
+#pragma warning disable CS4014
+            Task.Delay(250).ContinueWith(_ => Dispatcher.Invoke(() => { if (!done) IsLoading = true; }));
+#pragma warning restore CS4014
 
             await Task.Run(() => SearchIn(CurrentDocument.RootElement));
+
+            done = true;
 
             Status = null;
             IsLoading = false;
