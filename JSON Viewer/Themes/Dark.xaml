@@ -7,5 +7,6 @@
     <SolidColorBrush x:Key="ToolBack" Color="#252526" />
     <SolidColorBrush x:Key="ToolbarBtnBack" Color="Transparent" />
     <SolidColorBrush x:Key="TreeSelected" Color="YellowGreen" />
+    <SolidColorBrush x:Key="StatusBarBack" Color="#007ACC" />
 
 </ResourceDictionary>

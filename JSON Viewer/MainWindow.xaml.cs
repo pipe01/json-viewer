@@ -3,6 +3,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
@@ -29,11 +30,12 @@ namespace JSON_Viewer
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window
+    public partial class MainWindow : Window, INotifyPropertyChanged
     {
         public ObservableCollection<JsonContainer> Items { get; set; } = new ObservableCollection<JsonContainer>();
 
         public SearchState SearchState { get; set; } = new SearchState();
+        public string SelectedPath { get; set; } = "";
 
         private readonly DebounceDispatcher QueryDebouncer = new DebounceDispatcher();
         private readonly WeakReference<JsonContainer> PreviousMatchedElement = new WeakReference<JsonContainer>(null);
@@ -41,9 +43,11 @@ namespace JSON_Viewer
         private readonly ResourceDictionary LightDic = new ResourceDictionary { Source = new Uri("pack://application:,,,/Themes/Light.xaml") };
         private readonly ResourceDictionary DarkDic = new ResourceDictionary { Source = new Uri("pack://application:,,,/Themes/Dark.xaml") };
 
-    private JsonDocument CurrentDocument;
+        private JsonDocument CurrentDocument;
         private JsonContainer RootContainer;
         private bool HasUpdatedSearch; //Dirty hack
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public MainWindow()
         {
@@ -108,8 +112,6 @@ namespace JSON_Viewer
 
         private void ExpandTo(string path)
         {
-            Debug.WriteLine("Highlight: " + path);
-
             string currPath = "";
             var currentContainer = RootContainer;
 
@@ -292,5 +294,15 @@ namespace JSON_Viewer
         }
 
         private void Dark_Unchecked(object sender, RoutedEventArgs e) => SetLightTheme();
+
+        private void Tree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
+        {
+            SelectedPath = (e.NewValue as JsonContainer)?.Path;
+        }
+
+        private void CopyPath_Click(object sender, RoutedEventArgs e)
+        {
+            Clipboard.SetText(SelectedPath);
+        }
     }
 }
