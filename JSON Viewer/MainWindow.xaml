@@ -6,7 +6,8 @@
         xmlns:local="clr-namespace:JSON_Viewer"
         xmlns:conv="clr-namespace:JSON_Viewer.Converters"
         mc:Ignorable="d" Icon="{StaticResource Icon}" Background="{DynamicResource WindowBack}" Foreground="{DynamicResource Fore}"
-        Title="Piped JSON Viewer" Height="450" Width="800" Initialized="Window_Initialized">
+        Title="Piped JSON Viewer" Height="450" Width="800" Initialized="Window_Initialized"
+        IsEnabled="{Binding IsLoading, Converter={conv:NegateBoolConverter}}">
 
     <Window.Resources>
         <ContextMenu x:Key="ItemMenu">
@@ -88,7 +89,8 @@
         </Border>
 
         <TreeView Name="Tree" ItemsSource="{Binding Items}" DockPanel.Dock="Top" BorderBrush="Transparent" Padding="0 5 0 0"
-                  VirtualizingPanel.IsVirtualizing="True" Background="{DynamicResource ToolBack}" SelectedItemChanged="Tree_SelectedItemChanged">
+                  VirtualizingPanel.IsVirtualizing="True" Background="{DynamicResource ToolBack}" SelectedItemChanged="Tree_SelectedItemChanged"
+                  VirtualizingPanel.VirtualizationMode="Recycling">
             <TreeView.CommandBindings>
                 <CommandBinding Command="ApplicationCommands.Copy" Executed="CommandBinding_Executed" />
             </TreeView.CommandBindings>
