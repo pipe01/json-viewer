@@ -118,6 +118,8 @@ namespace JSON_Viewer
 
         private async Task Load(Stream data)
         {
+            var sw = Stopwatch.StartNew();
+
             SearchState.Reset();
             Items.Clear();
 
@@ -132,8 +134,10 @@ namespace JSON_Viewer
             Items.Add(RootContainer);
 
             this.Cursor = null;
-            Status = null;
+            Status = $"Loaded {(float)data.Length / 1024 / 1024:0.0}MB of data in {sw.Elapsed}";
             IsLoading = false;
+
+            Dispatcher.InvokeDelayed(4000, () => Status = "");
         }
 
         private void MenuItem_Click(object sender, RoutedEventArgs e)
@@ -237,9 +241,7 @@ namespace JSON_Viewer
             bool done = false;
 
             Status = "Searching...";
-#pragma warning disable CS4014
-            Task.Delay(250).ContinueWith(_ => Dispatcher.Invoke(() => { if (!done) IsLoading = true; }));
-#pragma warning restore CS4014
+            Dispatcher.InvokeDelayed(250, () => { if (!done) IsLoading = true; });
 
             await Task.Run(() => SearchIn(CurrentDocument.RootElement));
 
