@@ -14,29 +14,25 @@ namespace JSON_Viewer.Converters
     {
         public object Convert(object value, Type targetType, object parameter, CultureInfo culture)
         {
-            return Serialize(value as JsonContainer);
-        }
-
-        private static string Serialize(JsonContainer value)
-        {
-            if (value == null)
+            if (!(value is JsonContainer cont))
                 return null;
 
             string str;
 
-            if (value.Element.ValueKind == JsonValueKind.Array)
-                str = $"[{value.Element.GetArrayLength()}]";
-            else if (value.Element.ValueKind == JsonValueKind.Object)
+            if (cont.Element.ValueKind == JsonValueKind.Array)
+                str = $"[{cont.Element.GetArrayLength()}]";
+            else if (cont.Element.ValueKind == JsonValueKind.Object)
                 str = "{...}";
             else
-                str = JsonSerializer.Serialize(value.Element);
+                str = JsonSerializer.Serialize(cont.Element);
 
-            if (value.ArrayIndex != null)
-                str = $"{value.ArrayIndex}:   {str}";
-            else if (value.PropertyName != null)
-                str = $"\"{value.PropertyName}\":   {str}";
+            if (cont.ArrayIndex != null)
+                str = $"{cont.ArrayIndex}:   {str}";
+            else if (cont.PropertyName != null)
+                str = $"\"{cont.PropertyName}\":   {str}";
 
             return str;
+
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)
