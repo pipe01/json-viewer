@@ -103,6 +103,11 @@ namespace JSON_Viewer
         {
 #if DEBUG
             await Load("data.json");
+#else
+            var args = Environment.GetCommandLineArgs();
+
+            if (args.Length == 2)
+                await Load(args[1]);
 #endif
         }
 
