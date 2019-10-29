@@ -160,7 +160,6 @@ namespace JSON_Viewer
 
         private void Query_Changed(object sender, TextChangedEventArgs e)
         {
-            Debug.WriteLine("Changed");
             SearchState.Reset();
             UpdateSearchDebounce(sender, e);
         }
@@ -395,6 +394,12 @@ namespace JSON_Viewer
         private async void Search_Click(object sender, RoutedEventArgs e)
         {
             await UpdateSearch();
+        }
+
+        private async void Query_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (!AutoSearch && e.Key == Key.Return)
+                await UpdateSearch();
         }
     }
 }

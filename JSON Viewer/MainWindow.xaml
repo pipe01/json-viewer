@@ -59,7 +59,8 @@
         <Border DockPanel.Dock="Right" Width="200" Padding="5" BorderThickness="1" BorderBrush="Gray">
             <StackPanel Orientation="Vertical">
                 <TextBlock>Search for text:</TextBlock>
-                <TextBox FontSize="14" Text="{Binding SearchState.Query, UpdateSourceTrigger=PropertyChanged}" TextChanged="Query_Changed" Margin="0 5 0 0"></TextBox>
+                <TextBox FontSize="14" Text="{Binding SearchState.Query, UpdateSourceTrigger=PropertyChanged}"
+                         TextChanged="Query_Changed" Margin="0 5 0 0" KeyDown="Query_KeyDown"></TextBox>
                 <Button HorizontalAlignment="Right" Margin="0 5 0 0" Width="60" Height="25" Click="Search_Click" IsEnabled="{Binding AutoSearch, Converter={conv:NegateBoolConverter}}">
                     Search
                 </Button>
