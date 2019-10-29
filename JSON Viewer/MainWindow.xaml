@@ -114,8 +114,11 @@
             </TreeView.ItemContainerStyle>
             
             <TreeView.ItemTemplate>
-                <HierarchicalDataTemplate ItemsSource="{Binding Path=., Converter={conv:JsonElementToChildrenConverter}}">
-                    <TextBlock Text="{Binding Path=., Converter={conv:JsonElementToStringConverter}, ConverterParameter={RelativeSource Mode=PreviousData}}"></TextBlock>
+                <HierarchicalDataTemplate DataType="{x:Type local:JsonContainer}" ItemsSource="{Binding Path=., Converter={conv:JsonElementToChildrenConverter}}">
+                    <StackPanel Orientation="Horizontal">
+                        <TextBlock Text="{Binding Path=., Converter={conv:JsonElementToStringConverter}, ConverterParameter=name}" Foreground="{DynamicResource PropertyNameFore}"></TextBlock>
+                        <TextBlock Text="{Binding Path=., Converter={conv:JsonElementToStringConverter}}" Foreground="{DynamicResource PropertyValueFore}"></TextBlock>
+                    </StackPanel>
                 </HierarchicalDataTemplate>
             </TreeView.ItemTemplate>
         </TreeView>

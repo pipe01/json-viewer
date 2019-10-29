@@ -6,7 +6,9 @@
     <SolidColorBrush x:Key="WindowBack" Color="#2D2D30" />
     <SolidColorBrush x:Key="ToolBack" Color="#252526" />
     <SolidColorBrush x:Key="ToolbarBtnBack" Color="Transparent" />
-    <SolidColorBrush x:Key="TreeSelected" Color="YellowGreen" />
+    <SolidColorBrush x:Key="TreeSelected" Color="LightGoldenrodYellow" />
     <SolidColorBrush x:Key="StatusBarBack" Color="#007ACC" />
+    <SolidColorBrush x:Key="PropertyNameFore" Color="IndianRed" />
+    <SolidColorBrush x:Key="PropertyValueFore" Color="CadetBlue" />
 
 </ResourceDictionary>

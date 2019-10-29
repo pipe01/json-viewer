@@ -17,22 +17,22 @@ namespace JSON_Viewer.Converters
             if (!(value is JsonContainer cont))
                 return null;
 
-            string str;
+            if (parameter is string foo && foo == "name")
+            {
+                if (cont.ArrayIndex != null)
+                    return $"{cont.ArrayIndex}:   ";
+                else if (cont.PropertyName != null)
+                    return $"\"{cont.PropertyName}\":   ";
+
+                return null;
+            }
 
             if (cont.Element.ValueKind == JsonValueKind.Array)
-                str = $"[{cont.Element.GetArrayLength()}]";
+                return $"[{cont.Element.GetArrayLength()}]";
             else if (cont.Element.ValueKind == JsonValueKind.Object)
-                str = "{...}";
+                return "{...}";
             else
-                str = JsonSerializer.Serialize(cont.Element);
-
-            if (cont.ArrayIndex != null)
-                str = $"{cont.ArrayIndex}:   {str}";
-            else if (cont.PropertyName != null)
-                str = $"\"{cont.PropertyName}\":   {str}";
-
-            return str;
-
+                return JsonSerializer.Serialize(cont.Element);
         }
 
         public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture)

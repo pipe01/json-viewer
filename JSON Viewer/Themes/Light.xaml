@@ -13,5 +13,7 @@
     <SolidColorBrush x:Key="ToolbarBtnBack" Color="White" />
     <SolidColorBrush x:Key="TreeSelected" Color="Yellow" />
     <SolidColorBrush x:Key="StatusBarBack" Color="Transparent" />
+    <SolidColorBrush x:Key="PropertyNameFore" Color="OrangeRed" />
+    <SolidColorBrush x:Key="PropertyValueFore" Color="RoyalBlue" />
 
 </ResourceDictionary>
