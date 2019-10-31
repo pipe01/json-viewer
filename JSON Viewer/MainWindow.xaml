@@ -24,8 +24,8 @@
                 <Image Source="{StaticResource Open}" />
             </Button>
 
-            <ComboBox Margin="5 0 0 0" VerticalAlignment="Center" SelectedItem="{Binding CurrentTheme}" ItemsSource="{Binding Themes}"
-                      SelectionChanged="Themes_SelectionChanged">
+            <ComboBox Margin="5 0 0 0" VerticalAlignment="Center" SelectedItem="{Binding ThemeManager.CurrentTheme}"
+                      ItemsSource="{Binding ThemeManager.Themes}" SelectionChanged="Themes_SelectionChanged">
                 <ComboBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type t:Theme}">
                         <TextBlock Text="{Binding WpfName}"></TextBlock>

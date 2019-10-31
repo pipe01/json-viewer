@@ -42,8 +42,7 @@ namespace JSON_Viewer
         public string SelectedPath { get; set; } = "";
         public bool AutoSearch { get; set; }
 
-        public ObservableCollection<Theme> Themes { get; set; } = new ObservableCollection<Theme>();
-        public Theme CurrentTheme { get; set; }
+        public ThemeManager ThemeManager { get; set; }
 
         public int UsedMemoryMB { get; set; }
         public string Status { get; set; } = "";
@@ -52,9 +51,6 @@ namespace JSON_Viewer
         private readonly DebounceDispatcher QueryDebouncer = new DebounceDispatcher();
         private readonly WeakReference<JsonContainer> PreviousMatchedElement = new WeakReference<JsonContainer>(null);
         private readonly DispatcherTimer MemoryTimer;
-
-        private readonly ResourceDictionary LightDic = new ResourceDictionary { Source = new Uri("pack://application:,,,/Themes/Light.xaml") };
-        private readonly ResourceDictionary DarkDic = new ResourceDictionary { Source = new Uri("pack://application:,,,/Themes/Dark.xaml") };
 
         private Configuration Config;
         private JsonDocument CurrentDocument;
@@ -66,9 +62,9 @@ namespace JSON_Viewer
 
         public MainWindow()
         {
-            LoadConfig();
-
             InitializeComponent();
+
+            LoadConfig();
 
             this.DataContext = this;
 
@@ -88,17 +84,11 @@ namespace JSON_Viewer
 
             Resources.MergedDictionaries.Clear(); //Remove merged dictionary used for designer
 
-            Themes.Add(new Theme("Light", true, LightDic));
-            Themes.Add(new Theme("Dark", true, DarkDic));
+            ThemeManager = new ThemeManager(Resources, Dispatcher);
 
-            foreach (var item in ThemeManager.LoadAllThemes())
-            {
-                Themes.Add(item);
-            }
+            var configTheme = ThemeManager.Themes.SingleOrDefault(o => o.Name == theme);
 
-            var configTheme = Themes.SingleOrDefault(o => o.Name == theme);
-
-            CurrentTheme = configTheme ?? Themes[0];
+            ThemeManager.CurrentTheme = configTheme ?? ThemeManager.Themes[0];
         }
 
         private void MemoryTimer_Elapsed(object sender, EventArgs e)
@@ -451,10 +441,7 @@ namespace JSON_Viewer
 
         private void Themes_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Resources.MergedDictionaries.Add(CurrentTheme.Resources);
-            Resources.MergedDictionaries.RemoveAt(0);
-
-            Config.AppSettings.Settings["Theme"].Value = CurrentTheme.Name;
+            Config.AppSettings.Settings["Theme"].Value = ThemeManager.CurrentTheme.Name;
             Config.Save();
         }
     }
