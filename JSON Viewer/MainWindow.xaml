@@ -61,15 +61,62 @@
             </StatusBarItem>
         </StatusBar>
 
-        <Border DockPanel.Dock="Right" Width="200" Padding="5" BorderThickness="1" BorderBrush="Gray">
-            <StackPanel Orientation="Vertical">
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0 0 0 5">
+            <TextBlock VerticalAlignment="Center" Margin="5 0 0 0" Style="{StaticResource Link}" MouseUp="ExpandAll_Click">
+                Expand all
+            </TextBlock>
+        </StackPanel>
+
+        <Grid DockPanel.Dock="Top">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="4" />
+                <ColumnDefinition Width="200" />
+            </Grid.ColumnDefinitions>
+
+            <TreeView Grid.Column="0" Name="Tree" ItemsSource="{Binding Items}" BorderBrush="Transparent" Padding="0 5 0 0"
+                  VirtualizingPanel.IsVirtualizing="True" Background="{DynamicResource ToolBack}" SelectedItemChanged="Tree_SelectedItemChanged"
+                  VirtualizingPanel.VirtualizationMode="Recycling">
+                <TreeView.CommandBindings>
+                    <CommandBinding Command="ApplicationCommands.Copy" Executed="CommandBinding_Executed" />
+                </TreeView.CommandBindings>
+
+                <TreeView.ItemContainerStyle>
+                    <Style TargetType="TreeViewItem">
+                        <Setter Property="IsExpanded" Value="{Binding IsExpanded}" />
+                        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=OneWay}" />
+                        <Setter Property="local:TreeViewItemHelper.BringSelectedItemIntoView" Value="True" />
+
+                        <Style.Triggers>
+                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                <DataTrigger.Setters>
+                                    <Setter Property="Background" Value="{DynamicResource TreeSelected}" />
+                                </DataTrigger.Setters>
+                            </DataTrigger>
+                        </Style.Triggers>
+                    </Style>
+                </TreeView.ItemContainerStyle>
+
+                <TreeView.ItemTemplate>
+                    <HierarchicalDataTemplate DataType="{x:Type local:JsonContainer}" ItemsSource="{Binding Path=., Converter={conv:JsonElementToChildrenConverter}}">
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="{Binding Path=., Converter={conv:JsonElementToStringConverter}, ConverterParameter=name}" Foreground="{DynamicResource PropertyNameFore}"></TextBlock>
+                            <TextBlock Text="{Binding Path=., Converter={conv:JsonElementToStringConverter}}" Foreground="{DynamicResource PropertyValueFore}"></TextBlock>
+                        </StackPanel>
+                    </HierarchicalDataTemplate>
+                </TreeView.ItemTemplate>
+            </TreeView>
+
+            <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Background="{DynamicResource SplitterColor}" />
+
+            <StackPanel Grid.Column="2" Orientation="Vertical" Margin="5">
                 <TextBlock>Search for text:</TextBlock>
                 <TextBox FontSize="14" Text="{Binding SearchState.Query, UpdateSourceTrigger=PropertyChanged}"
                          TextChanged="Query_Changed" Margin="0 5 0 0" KeyDown="Query_KeyDown"></TextBox>
                 <Button HorizontalAlignment="Right" Margin="0 5 0 0" Width="60" Height="25" Click="Search_Click" IsEnabled="{Binding AutoSearch, Converter={conv:NegateBoolConverter}}">
                     Search
                 </Button>
-                
+
                 <CheckBox IsChecked="{Binding SearchState.SearchInNames}" Checked="UpdateSearchDebounce" Unchecked="UpdateSearchDebounce" Foreground="{DynamicResource Fore}" Margin="0 10 0 0">Search in property names</CheckBox>
                 <CheckBox IsChecked="{Binding SearchState.SearchInValues}" Checked="UpdateSearchDebounce" Unchecked="UpdateSearchDebounce" Foreground="{DynamicResource Fore}">Search in values</CheckBox>
                 <CheckBox IsChecked="{Binding SearchState.RegexQuery}" Checked="UpdateSearchDebounce" Unchecked="UpdateSearchDebounce" Foreground="{DynamicResource Fore}">Enable regex</CheckBox>
@@ -88,49 +135,10 @@
 
                     <Button Margin="0 5 0 3" Click="PreviousMatch_Click" IsEnabled="{Binding SearchState.CanGoToPreviousMatch}">Previous</Button>
                     <Button Margin="0 0 0 10" Click="NextMatch_Click" IsEnabled="{Binding SearchState.CanGoToNextMatch}">Next</Button>
-                    
+
                     <Button Click="ClearSearch_Click">Clear search results</Button>
                 </StackPanel>
             </StackPanel>
-        </Border>
-
-        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0 0 0 5">
-            <TextBlock VerticalAlignment="Center" Margin="5 0 0 0" Style="{StaticResource Link}" MouseUp="ExpandAll_Click">
-                Expand all
-            </TextBlock>
-        </StackPanel>
-
-        <TreeView Name="Tree" ItemsSource="{Binding Items}" DockPanel.Dock="Top" BorderBrush="Transparent" Padding="0 5 0 0"
-                  VirtualizingPanel.IsVirtualizing="True" Background="{DynamicResource ToolBack}" SelectedItemChanged="Tree_SelectedItemChanged"
-                  VirtualizingPanel.VirtualizationMode="Recycling">
-            <TreeView.CommandBindings>
-                <CommandBinding Command="ApplicationCommands.Copy" Executed="CommandBinding_Executed" />
-            </TreeView.CommandBindings>
-
-            <TreeView.ItemContainerStyle>
-                <Style TargetType="TreeViewItem">
-                    <Setter Property="IsExpanded" Value="{Binding IsExpanded}" />
-                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=OneWay}" />
-                    <Setter Property="local:TreeViewItemHelper.BringSelectedItemIntoView" Value="True" />
-
-                    <Style.Triggers>
-                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                            <DataTrigger.Setters>
-                                <Setter Property="Background" Value="{DynamicResource TreeSelected}" />
-                            </DataTrigger.Setters>
-                        </DataTrigger>
-                    </Style.Triggers>
-                </Style>
-            </TreeView.ItemContainerStyle>
-            
-            <TreeView.ItemTemplate>
-                <HierarchicalDataTemplate DataType="{x:Type local:JsonContainer}" ItemsSource="{Binding Path=., Converter={conv:JsonElementToChildrenConverter}}">
-                    <StackPanel Orientation="Horizontal">
-                        <TextBlock Text="{Binding Path=., Converter={conv:JsonElementToStringConverter}, ConverterParameter=name}" Foreground="{DynamicResource PropertyNameFore}"></TextBlock>
-                        <TextBlock Text="{Binding Path=., Converter={conv:JsonElementToStringConverter}}" Foreground="{DynamicResource PropertyValueFore}"></TextBlock>
-                    </StackPanel>
-                </HierarchicalDataTemplate>
-            </TreeView.ItemTemplate>
-        </TreeView>
+        </Grid>
     </DockPanel>
 </Window>

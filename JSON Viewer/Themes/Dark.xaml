@@ -11,5 +11,6 @@
     <SolidColorBrush x:Key="PropertyNameFore" Color="IndianRed" />
     <SolidColorBrush x:Key="PropertyValueFore" Color="CadetBlue" />
     <SolidColorBrush x:Key="LinkFore" Color="RoyalBlue" />
+    <SolidColorBrush x:Key="SplitterColor" Color="#2D2D30" />
 
 </ResourceDictionary>
