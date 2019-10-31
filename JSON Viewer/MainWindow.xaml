@@ -5,6 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:JSON_Viewer"
         xmlns:conv="clr-namespace:JSON_Viewer.Converters"
+        xmlns:t="clr-namespace:JSON_Viewer.Themes"
         mc:Ignorable="d" Icon="{StaticResource Icon}" Background="{DynamicResource WindowBack}" Foreground="{DynamicResource Fore}"
         Title="Piped JSON Viewer" Height="450" Width="800" Initialized="Window_Initialized"
         IsEnabled="{Binding IsLoading, Converter={conv:NegateBoolConverter}}" AllowDrop="True" Drop="Window_Drop">
@@ -23,10 +24,14 @@
                 <Image Source="{StaticResource Open}" />
             </Button>
 
-            <CheckBox VerticalAlignment="Center" Margin="5 0 0 0" Foreground="{DynamicResource Fore}"
-                      Checked="Dark_Checked" Unchecked="Dark_Unchecked" IsChecked="{Binding IsDarkThemed}">
-                Dark
-            </CheckBox>
+            <ComboBox Margin="5 0 0 0" VerticalAlignment="Center" SelectedItem="{Binding CurrentTheme}" ItemsSource="{Binding Themes}"
+                      SelectionChanged="Themes_SelectionChanged">
+                <ComboBox.ItemTemplate>
+                    <DataTemplate DataType="{x:Type t:Theme}">
+                        <TextBlock Text="{Binding WpfName}"></TextBlock>
+                    </DataTemplate>
+                </ComboBox.ItemTemplate>
+            </ComboBox>
         </StackPanel>
 
         <StatusBar DockPanel.Dock="Bottom" Background="{DynamicResource StatusBarBack}">

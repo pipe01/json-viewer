@@ -1,4 +1,5 @@
-﻿using Ookii.Dialogs.Wpf;
+﻿using JSON_Viewer.Themes;
+using Ookii.Dialogs.Wpf;
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -39,8 +40,10 @@ namespace JSON_Viewer
 
         public SearchState SearchState { get; set; } = new SearchState();
         public string SelectedPath { get; set; } = "";
-        public bool IsDarkThemed { get; set; }
         public bool AutoSearch { get; set; }
+
+        public ObservableCollection<Theme> Themes { get; set; } = new ObservableCollection<Theme>();
+        public Theme CurrentTheme { get; set; }
 
         public int UsedMemoryMB { get; set; }
         public string Status { get; set; } = "";
@@ -85,12 +88,17 @@ namespace JSON_Viewer
 
             Resources.MergedDictionaries.Clear(); //Remove merged dictionary used for designer
 
-            if (theme == "Light" || theme == null)
-                SetLightTheme();
-            else if (theme == "Dark")
-                SetDarkTheme();
-            else
-                throw new Exception("Invalid theme");
+            Themes.Add(new Theme("Light", true, LightDic));
+            Themes.Add(new Theme("Dark", true, DarkDic));
+
+            foreach (var item in ThemeManager.LoadAllThemes())
+            {
+                Themes.Add(item);
+            }
+
+            var configTheme = Themes.SingleOrDefault(o => o.Name == theme);
+
+            CurrentTheme = configTheme ?? Themes[0];
         }
 
         private void MemoryTimer_Elapsed(object sender, EventArgs e)
@@ -360,30 +368,6 @@ namespace JSON_Viewer
             SearchState.Reset();
         }
 
-        private void SetDarkTheme()
-        {
-            IsDarkThemed = true;
-            Config.AppSettings.Settings["Theme"].Value = "Dark";
-            Config.Save();
-
-            Resources.MergedDictionaries.Remove(LightDic);
-            Resources.MergedDictionaries.Add(DarkDic);
-        }
-
-        private void Dark_Checked(object sender, RoutedEventArgs e) => SetDarkTheme();
-
-        private void SetLightTheme()
-        {
-            IsDarkThemed = false;
-            Config.AppSettings.Settings["Theme"].Value = "Light";
-            Config.Save();
-
-            Resources.MergedDictionaries.Remove(DarkDic);
-            Resources.MergedDictionaries.Add(LightDic);
-        }
-
-        private void Dark_Unchecked(object sender, RoutedEventArgs e) => SetLightTheme();
-
         private void Tree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
             SelectedPath = (e.NewValue as JsonContainer)?.Path;
@@ -448,6 +432,15 @@ namespace JSON_Viewer
                     ExpandAll(item);
                 }
             }
+        }
+
+        private void Themes_SelectionChanged(object sender, SelectionChangedEventArgs e)
+        {
+            Resources.MergedDictionaries.Add(CurrentTheme.Resources);
+            Resources.MergedDictionaries.RemoveAt(0);
+
+            Config.AppSettings.Settings["Theme"].Value = CurrentTheme.Name;
+            Config.Save();
         }
     }
 }
