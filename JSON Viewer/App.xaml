@@ -6,5 +6,11 @@
     <Application.Resources>
         <BitmapImage x:Key="Open" UriSource="Images/open.png" />
         <BitmapImage x:Key="Icon" UriSource="Images/icon.png" />
+
+        <Style x:Key="Link" TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource LinkFore}" />
+            <Setter Property="TextDecorations" Value="Underline" />
+            <Setter Property="Cursor" Value="Hand" />
+        </Style>
     </Application.Resources>
 </Application>

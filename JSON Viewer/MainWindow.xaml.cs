@@ -83,6 +83,8 @@ namespace JSON_Viewer
 
             string theme = Config.AppSettings.Settings["Theme"].Value;
 
+            Resources.MergedDictionaries.Clear(); //Remove merged dictionary used for designer
+
             if (theme == "Light" || theme == null)
                 SetLightTheme();
             else if (theme == "Dark")
@@ -407,6 +409,45 @@ namespace JSON_Viewer
         {
             if (!AutoSearch && e.Key == Key.Return)
                 await UpdateSearch();
+        }
+
+        private async void Window_Drop(object sender, DragEventArgs e)
+        {
+            if (e.Data.GetDataPresent(DataFormats.FileDrop))
+            {
+                string[] files = (string[])e.Data.GetData(DataFormats.FileDrop);
+
+                if (files.Length > 0)
+                    await Load(files[0]);
+            }
+        }
+
+        private void ExpandAll_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
+
+        private void ExpandAll_Click(object sender, MouseButtonEventArgs e)
+        {
+            Status = "This may take a while...";
+            this.UpdateLayout();
+            
+            using (Dispatcher.DisableProcessing())
+            {
+                ExpandAll(RootContainer);
+            }
+
+            Status = null;
+
+            static void ExpandAll(JsonContainer c)
+            {
+                c.IsExpanded = true;
+
+                foreach (var item in c.Children)
+                {
+                    ExpandAll(item);
+                }
+            }
         }
     }
 }

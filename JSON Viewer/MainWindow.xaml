@@ -7,16 +7,16 @@
         xmlns:conv="clr-namespace:JSON_Viewer.Converters"
         mc:Ignorable="d" Icon="{StaticResource Icon}" Background="{DynamicResource WindowBack}" Foreground="{DynamicResource Fore}"
         Title="Piped JSON Viewer" Height="450" Width="800" Initialized="Window_Initialized"
-        IsEnabled="{Binding IsLoading, Converter={conv:NegateBoolConverter}}">
+        IsEnabled="{Binding IsLoading, Converter={conv:NegateBoolConverter}}" AllowDrop="True" Drop="Window_Drop">
 
     <Window.Resources>
-        <ContextMenu x:Key="ItemMenu">
-            <ContextMenu.Items>
-                <MenuItem Header="asdasd" Click="MenuItem_Click" />
-            </ContextMenu.Items>
-        </ContextMenu>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/Light.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+        </ResourceDictionary>
     </Window.Resources>
-
+    
     <DockPanel>
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Height="28" Margin="3" HorizontalAlignment="Left">
             <Button Width="24" Height="24" Margin="0 2" Background="{DynamicResource ToolbarBtnBack}" Click="Open_Click">
@@ -89,6 +89,12 @@
             </StackPanel>
         </Border>
 
+        <StackPanel DockPanel.Dock="Top" Orientation="Horizontal" Margin="0 0 0 5">
+            <TextBlock VerticalAlignment="Center" Margin="5 0 0 0" Style="{StaticResource Link}" MouseUp="ExpandAll_Click">
+                Expand all
+            </TextBlock>
+        </StackPanel>
+
         <TreeView Name="Tree" ItemsSource="{Binding Items}" DockPanel.Dock="Top" BorderBrush="Transparent" Padding="0 5 0 0"
                   VirtualizingPanel.IsVirtualizing="True" Background="{DynamicResource ToolBack}" SelectedItemChanged="Tree_SelectedItemChanged"
                   VirtualizingPanel.VirtualizationMode="Recycling">
@@ -100,7 +106,6 @@
                 <Style TargetType="TreeViewItem">
                     <Setter Property="IsExpanded" Value="{Binding IsExpanded}" />
                     <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=OneWay}" />
-                    <Setter Property="Foreground" Value="{DynamicResource Fore}" />
                     <Setter Property="local:TreeViewItemHelper.BringSelectedItemIntoView" Value="True" />
 
                     <Style.Triggers>
