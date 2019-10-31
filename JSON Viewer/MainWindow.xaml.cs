@@ -143,7 +143,21 @@ namespace JSON_Viewer
             IsLoading = true;
 
             CurrentDocument?.Dispose();
-            CurrentDocument = await JsonDocument.ParseAsync(data);
+
+            try
+            {
+                CurrentDocument = await JsonDocument.ParseAsync(data);
+            }
+            catch (JsonException ex)
+            {
+                MessageBox.Show("Failed to read JSON file: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
+
+                this.Cursor = null;
+                Status = "";
+                IsLoading = false;
+                return;
+            }
+
             RootContainer = new JsonContainer(CurrentDocument.RootElement, "");
 
             Items.Add(RootContainer);
@@ -170,6 +184,7 @@ namespace JSON_Viewer
         private async void Open_Click(object sender, RoutedEventArgs e)
         {
             var dialog = new VistaOpenFileDialog();
+            dialog.Filter = "JSON Files|*.json|All files|*.*";
             
             if (dialog.ShowDialog() == true)
             {
