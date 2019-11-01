@@ -4,13 +4,20 @@
              xmlns:local="clr-namespace:JSON_Viewer"
              StartupUri="MainWindow.xaml">
     <Application.Resources>
-        <BitmapImage x:Key="Open" UriSource="Images/open.png" />
-        <BitmapImage x:Key="Icon" UriSource="Images/icon.png" />
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/Light.xaml" />
+            </ResourceDictionary.MergedDictionaries>
 
-        <Style x:Key="Link" TargetType="TextBlock">
-            <Setter Property="Foreground" Value="{DynamicResource LinkFore}" />
-            <Setter Property="TextDecorations" Value="Underline" />
-            <Setter Property="Cursor" Value="Hand" />
-        </Style>
+            <BitmapImage x:Key="Open" UriSource="Images/open.png" />
+            <BitmapImage x:Key="Icon" UriSource="Images/icon.png" />
+            <BitmapImage x:Key="New" UriSource="Images/new.png" />
+
+            <Style x:Key="Link" TargetType="TextBlock">
+                <Setter Property="Foreground" Value="{DynamicResource LinkFore}" />
+                <Setter Property="TextDecorations" Value="Underline" />
+                <Setter Property="Cursor" Value="Hand" />
+            </Style>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -9,11 +9,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Remove="Images\icon.png" />
-    <None Remove="Images\open.png" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Page Remove="Themes\Dark.xaml" />
     <Page Remove="Themes\Light.xaml" />
   </ItemGroup>
@@ -24,8 +19,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Resource Include="Images\icon.png" />
-    <Resource Include="Images\open.png" />
+    <Resource Include="Images\*.png" />
     <Resource Include="Themes\Dark.xaml">
       <Generator>MSBuild:Compile</Generator>
     </Resource>

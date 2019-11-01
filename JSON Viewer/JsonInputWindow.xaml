@@ -1,0 +1,23 @@
+﻿<Window x:Class="JSON_Viewer.JsonInputWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:JSON_Viewer"
+        mc:Ignorable="d" Background="{DynamicResource WindowBack}" Foreground="{DynamicResource Fore}"
+        Title="Input JSON" Height="269" Width="554" WindowStyle="ToolWindow">
+    <Grid Margin="5">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
+        </Grid.RowDefinitions>
+
+        <TextBlock Grid.Row="0" Margin="0 0 0 5">Enter the JSON data:</TextBlock>
+
+        <TextBox Grid.Row="1" Text="{Binding Text}" AcceptsReturn="True" TextWrapping="Wrap" Background="{DynamicResource ToolBack}"
+                 Foreground="{DynamicResource Fore}"/>
+
+        <Button Grid.Row="2" HorizontalAlignment="Right" Padding="15 5" Margin="0 5 0 0" Click="Load_Click">Load</Button>
+    </Grid>
+</Window>

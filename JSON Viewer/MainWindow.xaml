@@ -10,21 +10,16 @@
         Title="Piped JSON Viewer" Height="450" Width="800" Initialized="Window_Initialized"
         IsEnabled="{Binding IsLoading, Converter={conv:NegateBoolConverter}}" AllowDrop="True" Drop="Window_Drop">
 
-    <Window.Resources>
-        <ResourceDictionary>
-            <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Themes/Light.xaml" />
-            </ResourceDictionary.MergedDictionaries>
-        </ResourceDictionary>
-    </Window.Resources>
-    
     <DockPanel>
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Height="28" Margin="3" HorizontalAlignment="Left">
-            <Button Width="24" Height="24" Margin="0 2" Background="{DynamicResource ToolbarBtnBack}" Click="Open_Click">
+            <Button Width="24" Height="24" Margin="0 2" Background="{DynamicResource ToolbarBtnBack}" Click="New_Click">
+                <Image Source="{StaticResource New}" />
+            </Button>
+            <Button Width="24" Height="24" Margin="2 2" Background="{DynamicResource ToolbarBtnBack}" Click="Open_Click">
                 <Image Source="{StaticResource Open}" />
             </Button>
 
-            <ComboBox Margin="5 0 0 0" VerticalAlignment="Center" SelectedItem="{Binding ThemeManager.CurrentTheme}"
+            <ComboBox Margin="3 0 0 0" VerticalAlignment="Center" SelectedItem="{Binding ThemeManager.CurrentTheme}"
                       ItemsSource="{Binding ThemeManager.Themes}" SelectionChanged="Themes_SelectionChanged">
                 <ComboBox.ItemTemplate>
                     <DataTemplate DataType="{x:Type t:Theme}">

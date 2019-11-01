@@ -82,9 +82,9 @@ namespace JSON_Viewer
 
             string theme = Config.AppSettings.Settings["Theme"].Value;
 
-            Resources.MergedDictionaries.Clear(); //Remove merged dictionary used for designer
+            Application.Current.Resources.MergedDictionaries.Clear(); //Remove merged dictionary used for designer
 
-            ThemeManager = new ThemeManager(Resources, Dispatcher);
+            ThemeManager = new ThemeManager(Application.Current.Resources, Dispatcher);
 
             var configTheme = ThemeManager.Themes.SingleOrDefault(o => o.Name == theme);
 
@@ -157,11 +157,6 @@ namespace JSON_Viewer
             IsLoading = false;
 
             Dispatcher.InvokeDelayed(4000, () => Status = "");
-        }
-
-        private void MenuItem_Click(object sender, RoutedEventArgs e)
-        {
-
         }
 
         private void CommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -443,6 +438,17 @@ namespace JSON_Viewer
         {
             Config.AppSettings.Settings["Theme"].Value = ThemeManager.CurrentTheme.Name;
             Config.Save();
+        }
+
+        private async void New_Click(object sender, RoutedEventArgs e)
+        {
+            string json = JsonInputWindow.ShowAsDialog();
+            
+            if (json != null)
+            {
+                using var mem = new MemoryStream(Encoding.UTF8.GetBytes(json));
+                await Load(mem);
+            }
         }
     }
 }
