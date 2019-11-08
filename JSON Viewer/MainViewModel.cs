@@ -10,11 +10,7 @@ namespace JSON_Viewer
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
-        public ObservableCollection<JsonContainer> Items { get; set; } = new ObservableCollection<JsonContainer>();
-
-        public SearchState SearchState { get; set; } = new SearchState();
-        public string SelectedPath { get; set; } = "";
-        public bool AutoSearch { get; set; }
+        public ObservableCollection<TabViewModel> Tabs { get; set; } = new ObservableCollection<TabViewModel>();
 
         private const string QueryPrefix = "root => ";
         public string QueryPretty
@@ -34,6 +30,9 @@ namespace JSON_Viewer
         public string Query { get; set; }
 
         public ThemeManager ThemeManager { get; set; }
+
+        public int SelectedTabIndex { get; set; }
+        public TabViewModel SelectedTab => Tabs[SelectedTabIndex];
 
         public int UsedMemoryMB { get; set; }
         public string Status { get; set; } = "";

@@ -76,38 +76,50 @@
                 <ColumnDefinition Width="210" />
             </Grid.ColumnDefinitions>
 
-            <TreeView Grid.Column="0" Name="Tree" ItemsSource="{Binding Items}" BorderBrush="Transparent" Padding="0 5 0 0"
-                  VirtualizingPanel.IsVirtualizing="True" Background="{DynamicResource ToolBack}" SelectedItemChanged="Tree_SelectedItemChanged"
-                  VirtualizingPanel.VirtualizationMode="Recycling">
-                <TreeView.CommandBindings>
-                    <CommandBinding Command="ApplicationCommands.Copy" Executed="CommandBinding_Executed" />
-                </TreeView.CommandBindings>
+            <TabControl Grid.Column="0" ItemsSource="{Binding Tabs}" SelectedIndex="{Binding SelectedTabIndex}">
+                <TabControl.ItemTemplate>
+                    <DataTemplate DataType="{x:Type local:TabViewModel}">
+                        <TextBlock Text="{Binding TabName}" ToolTip="{Binding FilePath}"></TextBlock>
+                    </DataTemplate>
+                </TabControl.ItemTemplate>
 
-                <TreeView.ItemContainerStyle>
-                    <Style TargetType="TreeViewItem">
-                        <Setter Property="IsExpanded" Value="{Binding IsExpanded}" />
-                        <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=OneWay}" />
-                        <Setter Property="local:TreeViewItemHelper.BringSelectedItemIntoView" Value="True" />
+                <TabControl.ContentTemplate>
+                    <DataTemplate DataType="{x:Type local:TabViewModel}">
+                        <TreeView Name="Tree" ItemsSource="{Binding Items}" BorderBrush="Transparent" Padding="0 5 0 0"
+                                      VirtualizingPanel.IsVirtualizing="True" VirtualizingPanel.VirtualizationMode="Recycling"
+                                      SelectedItemChanged="Tree_SelectedItemChanged" Background="{DynamicResource ToolBack}">
+                            <TreeView.CommandBindings>
+                                <CommandBinding Command="ApplicationCommands.Copy" Executed="CommandBinding_Executed" />
+                            </TreeView.CommandBindings>
 
-                        <Style.Triggers>
-                            <DataTrigger Binding="{Binding IsSelected}" Value="True">
-                                <DataTrigger.Setters>
-                                    <Setter Property="Background" Value="{DynamicResource TreeSelected}" />
-                                </DataTrigger.Setters>
-                            </DataTrigger>
-                        </Style.Triggers>
-                    </Style>
-                </TreeView.ItemContainerStyle>
+                            <TreeView.ItemContainerStyle>
+                                <Style TargetType="TreeViewItem">
+                                    <Setter Property="IsExpanded" Value="{Binding IsExpanded}" />
+                                    <Setter Property="IsSelected" Value="{Binding IsSelected, Mode=OneWay}" />
+                                    <Setter Property="local:TreeViewItemHelper.BringSelectedItemIntoView" Value="True" />
 
-                <TreeView.ItemTemplate>
-                    <HierarchicalDataTemplate DataType="{x:Type local:JsonContainer}" ItemsSource="{Binding Path=., Converter={conv:JsonElementToChildrenConverter}}">
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock Text="{Binding Path=., Converter={conv:JsonElementToStringConverter}, ConverterParameter=name}" Foreground="{DynamicResource PropertyNameFore}"></TextBlock>
-                            <TextBlock Text="{Binding Path=., Converter={conv:JsonElementToStringConverter}}" Foreground="{DynamicResource PropertyValueFore}"></TextBlock>
-                        </StackPanel>
-                    </HierarchicalDataTemplate>
-                </TreeView.ItemTemplate>
-            </TreeView>
+                                    <Style.Triggers>
+                                        <DataTrigger Binding="{Binding IsSelected}" Value="True">
+                                            <DataTrigger.Setters>
+                                                <Setter Property="Background" Value="{DynamicResource TreeSelected}" />
+                                            </DataTrigger.Setters>
+                                        </DataTrigger>
+                                    </Style.Triggers>
+                                </Style>
+                            </TreeView.ItemContainerStyle>
+
+                            <TreeView.ItemTemplate>
+                                <HierarchicalDataTemplate DataType="{x:Type local:JsonContainer}" ItemsSource="{Binding Path=., Converter={conv:JsonElementToChildrenConverter}}">
+                                    <StackPanel Orientation="Horizontal">
+                                        <TextBlock Text="{Binding Path=., Converter={conv:JsonElementToStringConverter}, ConverterParameter=name}" Foreground="{DynamicResource PropertyNameFore}"></TextBlock>
+                                        <TextBlock Text="{Binding Path=., Converter={conv:JsonElementToStringConverter}}" Foreground="{DynamicResource PropertyValueFore}"></TextBlock>
+                                    </StackPanel>
+                                </HierarchicalDataTemplate>
+                            </TreeView.ItemTemplate>
+                        </TreeView>
+                    </DataTemplate>
+                </TabControl.ContentTemplate>
+            </TabControl>
 
             <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Background="{DynamicResource SplitterColor}" />
 

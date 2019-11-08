@@ -26,6 +26,7 @@ using System.Windows.Media.Imaging;
 using System.Windows.Navigation;
 using System.Windows.Shapes;
 using System.Windows.Threading;
+using Path = System.IO.Path;
 
 #pragma warning disable RCS1031
 
@@ -43,10 +44,12 @@ namespace JSON_Viewer
         private readonly DispatcherTimer MemoryTimer;
 
         private Configuration Config;
-        private JsonDocument CurrentDocument;
-        private JsonContainer RootContainer;
         private bool HasUpdatedSearch; //Dirty hack
         private int MemoryTimerCounter;
+
+        private bool AutoSearchPreference;
+
+        private TabViewModel CurrentTab => ViewModel.SelectedTab;
 
         public MainWindow()
         {
@@ -63,9 +66,9 @@ namespace JSON_Viewer
         private void LoadConfig()
         {
             Config = ConfigurationManager.OpenExeConfiguration(Assembly.GetExecutingAssembly().Location);
-            ViewModel.AutoSearch = bool.Parse(Config.AppSettings.Settings["AutoSearch"].Value);
+            AutoSearchPreference = bool.Parse(Config.AppSettings.Settings["AutoSearch"].Value);
 
-            if (!ViewModel.AutoSearch)
+            if (!AutoSearchPreference)
                 HasUpdatedSearch = true;
 
             string theme = Config.AppSettings.Settings["Theme"].Value;
@@ -103,28 +106,34 @@ namespace JSON_Viewer
         {
             using var file = File.OpenRead(path);
 
-            if (file.Length > 50 * 1024 * 1024)
-                ViewModel.AutoSearch = false; //Automatically disable auto search for files bigger than 50MB
+            var tab = new TabViewModel();
+            tab.TabName = System.IO.Path.GetFileName(path);
+            tab.FilePath = Path.GetFullPath(path);
 
-            await Load(file);
+            if (file.Length > 50 * 1024 * 1024)
+                tab.AutoSearch = false; //Automatically disable auto search for files bigger than 50MB
+
+            await Load(file, tab);
+
+            ViewModel.Tabs.Add(tab);
         }
 
-        private async Task Load(Stream data)
+        private async Task Load(Stream data, TabViewModel tab)
         {
             var sw = Stopwatch.StartNew();
 
-            ViewModel.SearchState.Reset();
-            ViewModel.Items.Clear();
+            tab.SearchState.Reset();
+            tab.Items.Clear();
 
             this.Cursor = Cursors.AppStarting;
             ViewModel.Status = "Loading...";
             ViewModel.IsLoading = true;
 
-            CurrentDocument?.Dispose();
+            tab.CurrentDocument?.Dispose();
 
             try
             {
-                CurrentDocument = await JsonDocument.ParseAsync(data);
+                tab.CurrentDocument = await JsonDocument.ParseAsync(data);
             }
             catch (JsonException ex)
             {
@@ -136,9 +145,9 @@ namespace JSON_Viewer
                 return;
             }
 
-            RootContainer = new JsonContainer(CurrentDocument.RootElement, "");
+            tab.RootContainer = new JsonContainer(tab.CurrentDocument.RootElement, "");
 
-            ViewModel.Items.Add(RootContainer);
+            tab.Items.Add(tab.RootContainer);
 
             this.Cursor = null;
             ViewModel.Status = $"Loaded {(float)data.Length / 1024 / 1024:0.0}MB of data in {sw.Elapsed}";
@@ -149,9 +158,9 @@ namespace JSON_Viewer
 
         private void CommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
         {
-            string path = ((TreeViewItem)Tree.SelectedItem).Tag.ToString();
+            //string path = ((TreeViewItem)Tree.SelectedItem).Tag.ToString();
 
-            Clipboard.SetText(JsonSerializer.Serialize(CurrentDocument.RootElement.Query(path)));
+            //Clipboard.SetText(JsonSerializer.Serialize(CurrentDocument.RootElement.Query(path)));
         }
 
         private async void Open_Click(object sender, RoutedEventArgs e)
@@ -167,22 +176,22 @@ namespace JSON_Viewer
 
         private void Query_Changed(object sender, TextChangedEventArgs e)
         {
-            ViewModel.SearchState.Reset();
+            CurrentTab.SearchState.Reset();
             UpdateSearchDebounce(sender, e);
         }
 
         private void UpdateSearchDebounce(object sender, EventArgs e)
         {
-            if (ViewModel.AutoSearch)
+            if (CurrentTab.AutoSearch)
                 QueryDebouncer.Debounce(500, async _ => await UpdateSearch());
         }
 
         private void ExpandTo(string path)
         {
             string currPath = "";
-            var currentContainer = RootContainer;
+            var currentContainer = CurrentTab.RootContainer;
 
-            RootContainer.IsExpanded = true;
+            CurrentTab.RootContainer.IsExpanded = true;
 
             for (int i = 0; i < path.Length; i++)
             {
@@ -232,9 +241,9 @@ namespace JSON_Viewer
                 return;
             }
 
-            if (CurrentDocument == null)
+            if (CurrentTab.CurrentDocument == null)
             {
-                ViewModel.SearchState.Reset();
+                CurrentTab.SearchState.Reset();
                 return;
             }
 
@@ -246,15 +255,15 @@ namespace JSON_Viewer
             ViewModel.Status = "Searching...";
             Dispatcher.InvokeDelayed(250, () => { if (!done) ViewModel.IsLoading = true; });
 
-            await Task.Run(() => SearchIn(CurrentDocument.RootElement));
+            await Task.Run(() => SearchIn(CurrentTab.CurrentDocument.RootElement));
 
             done = true;
 
             ViewModel.Status = null;
             ViewModel.IsLoading = false;
 
-            ViewModel.SearchState.FoundPaths = foundPaths.ToArray();
-            ViewModel.SearchState.CurrentMatchIndex = 0;
+            CurrentTab.SearchState.FoundPaths = foundPaths.ToArray();
+            CurrentTab.SearchState.CurrentMatchIndex = 0;
 
             if (foundPaths.Count > 0)
                 ExpandTo(foundPaths[0]);
@@ -274,9 +283,9 @@ namespace JSON_Viewer
                 foundPaths.Add(path.ToString());
             }
 
-            bool SearchString(string str) => ViewModel.SearchState.Query == null ? false : ViewModel.SearchState.RegexQuery
-                    ? Regex.IsMatch(str, ViewModel.SearchState.Query)
-                    : str.Contains(ViewModel.SearchState.Query);
+            bool SearchString(string str) => CurrentTab.SearchState.Query == null ? false : CurrentTab.SearchState.RegexQuery
+                    ? Regex.IsMatch(str, CurrentTab.SearchState.Query)
+                    : str.Contains(CurrentTab.SearchState.Query);
 
             void SearchIn(JsonElement element, object key = null)
             {
@@ -294,7 +303,7 @@ namespace JSON_Viewer
                 {
                     foreach (var item in element.EnumerateObject())
                     {
-                        if (ViewModel.SearchState.SearchInNames && SearchString(item.Name))
+                        if (CurrentTab.SearchState.SearchInNames && SearchString(item.Name))
                         {
                             elementStack.Push((element, item.Name));
 
@@ -306,7 +315,7 @@ namespace JSON_Viewer
                         SearchIn(item.Value, item.Name);
                     }
                 }
-                else if (ViewModel.SearchState.SearchInValues
+                else if (CurrentTab.SearchState.SearchInValues
                      && ((element.ValueKind == JsonValueKind.String && SearchString(element.GetString()))
                      || SearchString(element.ToString())))
                 {
@@ -319,19 +328,19 @@ namespace JSON_Viewer
 
         private void NextMatch_Click(object sender, RoutedEventArgs e)
         {
-            if (ViewModel.SearchState.CanGoToNextMatch)
+            if (CurrentTab.SearchState.CanGoToNextMatch)
             {
-                ViewModel.SearchState.CurrentMatchIndex++;
-                ExpandTo(ViewModel.SearchState.FoundPaths[ViewModel.SearchState.CurrentMatchIndex]);
+                CurrentTab.SearchState.CurrentMatchIndex++;
+                ExpandTo(CurrentTab.SearchState.FoundPaths[CurrentTab.SearchState.CurrentMatchIndex]);
             }
         }
 
         private void PreviousMatch_Click(object sender, RoutedEventArgs e)
         {
-            if (ViewModel.SearchState.CanGoToPreviousMatch)
+            if (CurrentTab.SearchState.CanGoToPreviousMatch)
             {
-                ViewModel.SearchState.CurrentMatchIndex--;
-                ExpandTo(ViewModel.SearchState.FoundPaths[ViewModel.SearchState.CurrentMatchIndex]);
+                CurrentTab.SearchState.CurrentMatchIndex--;
+                ExpandTo(CurrentTab.SearchState.FoundPaths[CurrentTab.SearchState.CurrentMatchIndex]);
             }
         }
 
@@ -353,22 +362,22 @@ namespace JSON_Viewer
                 PreviousMatchedElement.SetTarget(null);
             }
 
-            ViewModel.SearchState.Reset();
+            CurrentTab.SearchState.Reset();
         }
 
         private void Tree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            ViewModel.SelectedPath = (e.NewValue as JsonContainer)?.Path;
+            CurrentTab.SelectedPath = (e.NewValue as JsonContainer)?.Path;
         }
 
         private void CopyPath_Click(object sender, RoutedEventArgs e)
         {
-            Clipboard.SetText(ViewModel.SelectedPath);
+            Clipboard.SetText(CurrentTab.SelectedPath);
         }
 
         private void UpdateAutoSearch(object sender, RoutedEventArgs e)
         {
-            Config.AppSettings.Settings["AutoSearch"].Value = ViewModel.AutoSearch.ToString();
+            Config.AppSettings.Settings["AutoSearch"].Value = CurrentTab.AutoSearch.ToString();
             Config.Save();
         }
 
@@ -379,7 +388,7 @@ namespace JSON_Viewer
 
         private async void Query_KeyDown(object sender, KeyEventArgs e)
         {
-            if (!ViewModel.AutoSearch && e.Key == Key.Return)
+            if (!CurrentTab.AutoSearch && e.Key == Key.Return)
                 await UpdateSearch();
         }
 
@@ -406,7 +415,7 @@ namespace JSON_Viewer
             
             using (Dispatcher.DisableProcessing())
             {
-                ExpandAll(RootContainer);
+                ExpandAll(CurrentTab.RootContainer);
             }
 
             ViewModel.Status = null;
@@ -435,25 +444,30 @@ namespace JSON_Viewer
             if (json != null)
             {
                 using var mem = new MemoryStream(Encoding.UTF8.GetBytes(json));
-                await Load(mem);
+                var tab = new TabViewModel();
+                tab.TabName = "New file";
+
+                await Load(mem, tab);
+
+                ViewModel.Tabs.Add(tab);
             }
         }
 
         private async void ExecuteQuery_Click(object sender, RoutedEventArgs e)
         {
-            var results = await JsonQueryExecutor.RunQuery(RootContainer, ViewModel.QueryPretty);
+            var results = await JsonQueryExecutor.RunQuery(CurrentTab.RootContainer, ViewModel.QueryPretty);
 
-            ViewModel.Items.Clear();
+            CurrentTab.Items.Clear();
 
             if (results is JsonContainer elem)
             {
-                ViewModel.Items.Add(elem);
+                CurrentTab.Items.Add(elem);
             }
             else if (results is IEnumerable<JsonContainer> elems)
             {
                 foreach (var item in elems)
                 {
-                    ViewModel.Items.Add(item);
+                    CurrentTab.Items.Add(item);
                 }
             }
         }
