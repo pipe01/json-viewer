@@ -79,7 +79,7 @@
             <TabControl Grid.Column="0" ItemsSource="{Binding Tabs}" SelectedIndex="{Binding SelectedTabIndex}">
                 <TabControl.ItemTemplate>
                     <DataTemplate DataType="{x:Type local:TabViewModel}">
-                        <TextBlock Text="{Binding TabName}" ToolTip="{Binding FilePath}"></TextBlock>
+                        <TextBlock Text="{Binding TabName}" ToolTip="{Binding FilePath}" MouseDown="TreeTab_MouseDown"></TextBlock>
                     </DataTemplate>
                 </TabControl.ItemTemplate>
 

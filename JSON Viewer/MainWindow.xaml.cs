@@ -477,5 +477,16 @@ namespace JSON_Viewer
             ViewModel.Tabs.Add(tab);
             ViewModel.SelectedTab = tab;
         }
+
+        private void TreeTab_MouseDown(object sender, MouseButtonEventArgs e)
+        {
+            if (e.MiddleButton == MouseButtonState.Pressed)
+            {
+                var tab = ((FrameworkElement)sender).DataContext as TabViewModel;
+                ViewModel.Tabs.Remove(tab);
+
+                GC.Collect();
+            }
+        }
     }
 }
