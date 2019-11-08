@@ -161,7 +161,8 @@
                 <TabItem Header="Query">
                     <StackPanel Orientation="Vertical">
                         <TextBlock>Query (C#):</TextBlock>
-                        <TextBox Margin="0 5 0 0" Text="{Binding QueryPretty, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+                        <TextBox Margin="0 5 0 0" Text="{Binding QueryPretty, UpdateSourceTrigger=PropertyChanged}"
+                                 FontFamily="Consolas" FontSize="14"></TextBox>
                         <Button Margin="0 5 0 0" HorizontalAlignment="Right" Padding="5" Click="ExecuteQuery_Click">Execute</Button>
                     </StackPanel>
                 </TabItem>

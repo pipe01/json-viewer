@@ -30,8 +30,7 @@
                                         Panel.ZIndex="1" Margin="0,0,4,0" IsItemsHost="True" KeyboardNavigation.TabIndex="1"
                                         Background="Transparent" />
 
-                                <Border Name="Border" Background="Transparent"
-                                        BorderBrush="{DynamicResource TreeTabBorderColor}" BorderThickness="0 2 0 0">
+                                <Border Name="Border" Background="Transparent" BorderBrush="{DynamicResource TreeTabBorderColor}">
                                     <ContentPresenter ContentSource="SelectedContent" />
                                 </Border>
                             </DockPanel>
@@ -41,6 +40,15 @@
                                     <Setter TargetName="Border" Property="BorderBrush" Value="DarkGray" />
                                 </Trigger>
 
+                                <Trigger Property="TabStripPlacement" Value="Left">
+                                    <Setter TargetName="Border" Property="BorderThickness" Value="2 0 0 0" />
+                                </Trigger>
+                                <Trigger Property="TabStripPlacement" Value="Top">
+                                    <Setter TargetName="Border" Property="BorderThickness" Value="0 2 0 0" />
+                                </Trigger>
+                                <Trigger Property="TabStripPlacement" Value="Right">
+                                    <Setter TargetName="Border" Property="BorderThickness" Value="0 0 2 0" />
+                                </Trigger>
                                 <Trigger Property="TabStripPlacement" Value="Bottom">
                                     <Setter TargetName="Border" Property="BorderThickness" Value="0 0 0 2" />
                                 </Trigger>
