@@ -37,7 +37,7 @@ namespace JSON_Viewer
     /// </summary>
     public partial class MainWindow : Window
     {
-        public MainViewModel ViewModel { get; set; } = new MainViewModel();
+        private readonly MainViewModel ViewModel = new MainViewModel();
 
         private readonly DebounceDispatcher QueryDebouncer = new DebounceDispatcher();
         private readonly WeakReference<JsonContainer> PreviousMatchedElement = new WeakReference<JsonContainer>(null);

@@ -18,6 +18,72 @@
                 <Setter Property="TextDecorations" Value="Underline" />
                 <Setter Property="Cursor" Value="Hand" />
             </Style>
+
+            <Style TargetType="TabControl">
+                <Setter Property="OverridesDefaultStyle" Value="True" />
+                
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="{x:Type TabControl}">
+                            <DockPanel KeyboardNavigation.TabNavigation="Local" LastChildFill="True">
+                                <TabPanel DockPanel.Dock="{TemplateBinding TabStripPlacement}" Name="HeaderPanel" Grid.Row="0"
+                                        Panel.ZIndex="1" Margin="0,0,4,0" IsItemsHost="True" KeyboardNavigation.TabIndex="1"
+                                        Background="Transparent" />
+
+                                <Border Name="Border" Background="Transparent"
+                                        BorderBrush="{DynamicResource TreeTabBorderColor}" BorderThickness="0 2 0 0">
+                                    <ContentPresenter ContentSource="SelectedContent" />
+                                </Border>
+                            </DockPanel>
+                            <ControlTemplate.Triggers>
+                                <Trigger Property="IsEnabled" Value="False">
+                                    <Setter Property="Foreground" Value="Black" />
+                                    <Setter TargetName="Border" Property="BorderBrush" Value="DarkGray" />
+                                </Trigger>
+
+                                <Trigger Property="TabStripPlacement" Value="Bottom">
+                                    <Setter TargetName="Border" Property="BorderThickness" Value="0 0 0 2" />
+                                </Trigger>
+                            </ControlTemplate.Triggers>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+
+                <Style.Resources>
+                    <Style TargetType="TabItem">
+                        <Setter Property="Template">
+                            <Setter.Value>
+                                <ControlTemplate TargetType="TabItem">
+                                    <Grid Name="Panel">
+                                        <ContentPresenter x:Name="ContentSite"
+                                            VerticalAlignment="Center"
+                                            HorizontalAlignment="Center"
+                                            ContentSource="Header"
+                                            Margin="10,2">
+                                            <ContentPresenter.Resources>
+                                                <Style TargetType="TextBlock">
+                                                    <Setter Property="Foreground" Value="{DynamicResource TreeTabHeaderColor}" />
+                                                </Style>
+                                            </ContentPresenter.Resources>
+                                        </ContentPresenter>
+                                    </Grid>
+                                    <ControlTemplate.Triggers>
+                                        <Trigger Property="IsSelected" Value="True">
+                                            <Setter TargetName="Panel" Property="Background" Value="{DynamicResource TreeTabSelectedColor}" />
+                                        </Trigger>
+                                        <Trigger Property="IsSelected" Value="False">
+                                            <Setter TargetName="Panel" Property="Background" Value="{DynamicResource TreeTabColor}" />
+                                        </Trigger>
+                                        <Trigger Property="IsMouseOver" Value="True">
+                                            <Setter TargetName="Panel" Property="Background" Value="{DynamicResource TreeTabHoverColor}" />
+                                        </Trigger>
+                                    </ControlTemplate.Triggers>
+                                </ControlTemplate>
+                            </Setter.Value>
+                        </Setter>
+                    </Style>
+                </Style.Resources>
+            </Style>
         </ResourceDictionary>
     </Application.Resources>
 </Application>

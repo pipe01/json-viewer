@@ -17,5 +17,9 @@
     <SolidColorBrush x:Key="PropertyValueFore" Color="RoyalBlue" />
     <SolidColorBrush x:Key="LinkFore" Color="RoyalBlue" />
     <SolidColorBrush x:Key="SplitterColor" Color="LightGray" />
+    <SolidColorBrush x:Key="TreeTabColor" Color="LightGray" />
+    <SolidColorBrush x:Key="TreeTabSelectedColor" Color="LightGray" />
+    <SolidColorBrush x:Key="TreeTabHoverColor" Color="LightGray" />
+    <SolidColorBrush x:Key="TreeTabHeaderColor" Color="Black" />
 
 </ResourceDictionary>

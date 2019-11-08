@@ -38,6 +38,8 @@ namespace JSON_Viewer
             set => SelectedTabIndex = Tabs.IndexOf(value);
         }
 
+        public SearchState SearchState => SelectedTab.SearchState;
+
         public int UsedMemoryMB { get; set; }
         public string Status { get; set; } = "";
         public bool IsLoading { get; set; }
