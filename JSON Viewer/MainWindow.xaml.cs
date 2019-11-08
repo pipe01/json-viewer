@@ -34,19 +34,9 @@ namespace JSON_Viewer
     /// <summary>
     /// Interaction logic for MainWindow.xaml
     /// </summary>
-    public partial class MainWindow : Window, INotifyPropertyChanged
+    public partial class MainWindow : Window
     {
-        public ObservableCollection<JsonContainer> Items { get; set; } = new ObservableCollection<JsonContainer>();
-
-        public SearchState SearchState { get; set; } = new SearchState();
-        public string SelectedPath { get; set; } = "";
-        public bool AutoSearch { get; set; }
-
-        public ThemeManager ThemeManager { get; set; }
-
-        public int UsedMemoryMB { get; set; }
-        public string Status { get; set; } = "";
-        public bool IsLoading { get; set; }
+        public MainViewModel ViewModel { get; set; } = new MainViewModel();
 
         private readonly DebounceDispatcher QueryDebouncer = new DebounceDispatcher();
         private readonly WeakReference<JsonContainer> PreviousMatchedElement = new WeakReference<JsonContainer>(null);
@@ -58,15 +48,13 @@ namespace JSON_Viewer
         private bool HasUpdatedSearch; //Dirty hack
         private int MemoryTimerCounter;
 
-        public event PropertyChangedEventHandler PropertyChanged;
-
         public MainWindow()
         {
             InitializeComponent();
 
             LoadConfig();
 
-            this.DataContext = this;
+            this.DataContext = ViewModel;
 
             MemoryTimer = new DispatcherTimer(TimeSpan.FromSeconds(1), DispatcherPriority.DataBind, MemoryTimer_Elapsed, Dispatcher);
             MemoryTimer.Start();
@@ -75,20 +63,20 @@ namespace JSON_Viewer
         private void LoadConfig()
         {
             Config = ConfigurationManager.OpenExeConfiguration(Assembly.GetExecutingAssembly().Location);
-            AutoSearch = bool.Parse(Config.AppSettings.Settings["AutoSearch"].Value);
+            ViewModel.AutoSearch = bool.Parse(Config.AppSettings.Settings["AutoSearch"].Value);
 
-            if (!AutoSearch)
+            if (!ViewModel.AutoSearch)
                 HasUpdatedSearch = true;
 
             string theme = Config.AppSettings.Settings["Theme"].Value;
 
             Application.Current.Resources.MergedDictionaries.Clear(); //Remove merged dictionary used for designer
 
-            ThemeManager = new ThemeManager(Application.Current.Resources, Dispatcher);
+            ViewModel.ThemeManager = new ThemeManager(Application.Current.Resources, Dispatcher);
 
-            var configTheme = ThemeManager.Themes.SingleOrDefault(o => o.Name == theme);
+            var configTheme = ViewModel.ThemeManager.Themes.SingleOrDefault(o => o.Name == theme);
 
-            ThemeManager.CurrentTheme = configTheme ?? ThemeManager.Themes[0];
+            ViewModel.ThemeManager.CurrentTheme = configTheme ?? ViewModel.ThemeManager.Themes[0];
         }
 
         private void MemoryTimer_Elapsed(object sender, EventArgs e)
@@ -96,7 +84,7 @@ namespace JSON_Viewer
             if (!this.IsActive)
                 return;
 
-            UsedMemoryMB = (int)(GC.GetTotalMemory(MemoryTimerCounter++ % 3 == 0) / (1024 * 1024));
+            ViewModel.UsedMemoryMB = (int)(GC.GetTotalMemory(MemoryTimerCounter++ % 3 == 0) / (1024 * 1024));
         }
 
         private async void Window_Initialized(object sender, EventArgs e)
@@ -116,7 +104,7 @@ namespace JSON_Viewer
             using var file = File.OpenRead(path);
 
             if (file.Length > 50 * 1024 * 1024)
-                AutoSearch = false; //Automatically disable auto search for files bigger than 50MB
+                ViewModel.AutoSearch = false; //Automatically disable auto search for files bigger than 50MB
 
             await Load(file);
         }
@@ -125,12 +113,12 @@ namespace JSON_Viewer
         {
             var sw = Stopwatch.StartNew();
 
-            SearchState.Reset();
-            Items.Clear();
+            ViewModel.SearchState.Reset();
+            ViewModel.Items.Clear();
 
             this.Cursor = Cursors.AppStarting;
-            Status = "Loading...";
-            IsLoading = true;
+            ViewModel.Status = "Loading...";
+            ViewModel.IsLoading = true;
 
             CurrentDocument?.Dispose();
 
@@ -143,20 +131,20 @@ namespace JSON_Viewer
                 MessageBox.Show("Failed to read JSON file: " + ex.Message, "Error", MessageBoxButton.OK, MessageBoxImage.Error);
 
                 this.Cursor = null;
-                Status = "";
-                IsLoading = false;
+                ViewModel.Status = "";
+                ViewModel.IsLoading = false;
                 return;
             }
 
             RootContainer = new JsonContainer(CurrentDocument.RootElement, "");
 
-            Items.Add(RootContainer);
+            ViewModel.Items.Add(RootContainer);
 
             this.Cursor = null;
-            Status = $"Loaded {(float)data.Length / 1024 / 1024:0.0}MB of data in {sw.Elapsed}";
-            IsLoading = false;
+            ViewModel.Status = $"Loaded {(float)data.Length / 1024 / 1024:0.0}MB of data in {sw.Elapsed}";
+            ViewModel.IsLoading = false;
 
-            Dispatcher.InvokeDelayed(4000, () => Status = "");
+            Dispatcher.InvokeDelayed(4000, () => ViewModel.Status = "");
         }
 
         private void CommandBinding_Executed(object sender, ExecutedRoutedEventArgs e)
@@ -179,13 +167,13 @@ namespace JSON_Viewer
 
         private void Query_Changed(object sender, TextChangedEventArgs e)
         {
-            SearchState.Reset();
+            ViewModel.SearchState.Reset();
             UpdateSearchDebounce(sender, e);
         }
 
         private void UpdateSearchDebounce(object sender, EventArgs e)
         {
-            if (AutoSearch)
+            if (ViewModel.AutoSearch)
                 QueryDebouncer.Debounce(500, async _ => await UpdateSearch());
         }
 
@@ -246,7 +234,7 @@ namespace JSON_Viewer
 
             if (CurrentDocument == null)
             {
-                SearchState.Reset();
+                ViewModel.SearchState.Reset();
                 return;
             }
 
@@ -255,18 +243,18 @@ namespace JSON_Viewer
 
             bool done = false;
 
-            Status = "Searching...";
-            Dispatcher.InvokeDelayed(250, () => { if (!done) IsLoading = true; });
+            ViewModel.Status = "Searching...";
+            Dispatcher.InvokeDelayed(250, () => { if (!done) ViewModel.IsLoading = true; });
 
             await Task.Run(() => SearchIn(CurrentDocument.RootElement));
 
             done = true;
 
-            Status = null;
-            IsLoading = false;
+            ViewModel.Status = null;
+            ViewModel.IsLoading = false;
 
-            SearchState.FoundPaths = foundPaths.ToArray();
-            SearchState.CurrentMatchIndex = 0;
+            ViewModel.SearchState.FoundPaths = foundPaths.ToArray();
+            ViewModel.SearchState.CurrentMatchIndex = 0;
 
             if (foundPaths.Count > 0)
                 ExpandTo(foundPaths[0]);
@@ -286,9 +274,9 @@ namespace JSON_Viewer
                 foundPaths.Add(path.ToString());
             }
 
-            bool SearchString(string str) => SearchState.Query == null ? false : SearchState.RegexQuery
-                    ? Regex.IsMatch(str, SearchState.Query)
-                    : str.Contains(SearchState.Query);
+            bool SearchString(string str) => ViewModel.SearchState.Query == null ? false : ViewModel.SearchState.RegexQuery
+                    ? Regex.IsMatch(str, ViewModel.SearchState.Query)
+                    : str.Contains(ViewModel.SearchState.Query);
 
             void SearchIn(JsonElement element, object key = null)
             {
@@ -306,7 +294,7 @@ namespace JSON_Viewer
                 {
                     foreach (var item in element.EnumerateObject())
                     {
-                        if (SearchState.SearchInNames && SearchString(item.Name))
+                        if (ViewModel.SearchState.SearchInNames && SearchString(item.Name))
                         {
                             elementStack.Push((element, item.Name));
 
@@ -318,7 +306,7 @@ namespace JSON_Viewer
                         SearchIn(item.Value, item.Name);
                     }
                 }
-                else if (SearchState.SearchInValues
+                else if (ViewModel.SearchState.SearchInValues
                      && ((element.ValueKind == JsonValueKind.String && SearchString(element.GetString()))
                      || SearchString(element.ToString())))
                 {
@@ -331,19 +319,19 @@ namespace JSON_Viewer
 
         private void NextMatch_Click(object sender, RoutedEventArgs e)
         {
-            if (SearchState.CanGoToNextMatch)
+            if (ViewModel.SearchState.CanGoToNextMatch)
             {
-                SearchState.CurrentMatchIndex++;
-                ExpandTo(SearchState.FoundPaths[SearchState.CurrentMatchIndex]);
+                ViewModel.SearchState.CurrentMatchIndex++;
+                ExpandTo(ViewModel.SearchState.FoundPaths[ViewModel.SearchState.CurrentMatchIndex]);
             }
         }
 
         private void PreviousMatch_Click(object sender, RoutedEventArgs e)
         {
-            if (SearchState.CanGoToPreviousMatch)
+            if (ViewModel.SearchState.CanGoToPreviousMatch)
             {
-                SearchState.CurrentMatchIndex--;
-                ExpandTo(SearchState.FoundPaths[SearchState.CurrentMatchIndex]);
+                ViewModel.SearchState.CurrentMatchIndex--;
+                ExpandTo(ViewModel.SearchState.FoundPaths[ViewModel.SearchState.CurrentMatchIndex]);
             }
         }
 
@@ -365,22 +353,22 @@ namespace JSON_Viewer
                 PreviousMatchedElement.SetTarget(null);
             }
 
-            SearchState.Reset();
+            ViewModel.SearchState.Reset();
         }
 
         private void Tree_SelectedItemChanged(object sender, RoutedPropertyChangedEventArgs<object> e)
         {
-            SelectedPath = (e.NewValue as JsonContainer)?.Path;
+            ViewModel.SelectedPath = (e.NewValue as JsonContainer)?.Path;
         }
 
         private void CopyPath_Click(object sender, RoutedEventArgs e)
         {
-            Clipboard.SetText(SelectedPath);
+            Clipboard.SetText(ViewModel.SelectedPath);
         }
 
         private void UpdateAutoSearch(object sender, RoutedEventArgs e)
         {
-            Config.AppSettings.Settings["AutoSearch"].Value = AutoSearch.ToString();
+            Config.AppSettings.Settings["AutoSearch"].Value = ViewModel.AutoSearch.ToString();
             Config.Save();
         }
 
@@ -391,7 +379,7 @@ namespace JSON_Viewer
 
         private async void Query_KeyDown(object sender, KeyEventArgs e)
         {
-            if (!AutoSearch && e.Key == Key.Return)
+            if (!ViewModel.AutoSearch && e.Key == Key.Return)
                 await UpdateSearch();
         }
 
@@ -413,7 +401,7 @@ namespace JSON_Viewer
 
         private void ExpandAll_Click(object sender, MouseButtonEventArgs e)
         {
-            Status = "This may take a while...";
+            ViewModel.Status = "This may take a while...";
             this.UpdateLayout();
             
             using (Dispatcher.DisableProcessing())
@@ -421,7 +409,7 @@ namespace JSON_Viewer
                 ExpandAll(RootContainer);
             }
 
-            Status = null;
+            ViewModel.Status = null;
 
             static void ExpandAll(JsonContainer c)
             {
@@ -436,7 +424,7 @@ namespace JSON_Viewer
 
         private void Themes_SelectionChanged(object sender, SelectionChangedEventArgs e)
         {
-            Config.AppSettings.Settings["Theme"].Value = ThemeManager.CurrentTheme.Name;
+            Config.AppSettings.Settings["Theme"].Value = ViewModel.ThemeManager.CurrentTheme.Name;
             Config.Save();
         }
 
@@ -448,6 +436,25 @@ namespace JSON_Viewer
             {
                 using var mem = new MemoryStream(Encoding.UTF8.GetBytes(json));
                 await Load(mem);
+            }
+        }
+
+        private async void ExecuteQuery_Click(object sender, RoutedEventArgs e)
+        {
+            var results = await JsonQueryExecutor.RunQuery(RootContainer, ViewModel.QueryPretty);
+
+            ViewModel.Items.Clear();
+
+            if (results is JsonContainer elem)
+            {
+                ViewModel.Items.Add(elem);
+            }
+            else if (results is IEnumerable<JsonContainer> elems)
+            {
+                foreach (var item in elems)
+                {
+                    ViewModel.Items.Add(item);
+                }
             }
         }
     }

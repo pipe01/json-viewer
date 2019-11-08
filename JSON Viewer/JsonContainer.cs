@@ -1,10 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json;
 
 namespace JSON_Viewer
 {
-    public class JsonContainer : INotifyPropertyChanged
+    public class JsonContainer : INotifyPropertyChanged, IReadOnlyCollection<JsonContainer>
     {
         public JsonElement Element { get; }
         public string Path { get; }
@@ -13,6 +14,10 @@ namespace JSON_Viewer
 
         public bool IsExpanded { get; set; }
         public bool IsSelected { get; set; }
+
+        int IReadOnlyCollection<JsonContainer>.Count => this.Children.Length;
+
+        public event PropertyChangedEventHandler PropertyChanged;
 
         public JsonContainer(JsonElement element, string path, int? arrayIndex = null, string propertyName = null)
         {
@@ -54,6 +59,28 @@ namespace JSON_Viewer
             }
         }
 
-        public event PropertyChangedEventHandler PropertyChanged;
+        public JsonContainer this[string propertyName]
+        {
+            get
+            {
+                foreach (var item in Children)
+                {
+                    if (item.PropertyName == propertyName)
+                        return item;
+                }
+
+                throw new System.Exception();
+            }
+        }
+
+        public IEnumerator<JsonContainer> GetEnumerator()
+        {
+            return ((IReadOnlyCollection<JsonContainer>)this.Children).GetEnumerator();
+        }
+
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return ((IReadOnlyCollection<JsonContainer>)this.Children).GetEnumerator();
+        }
     }
 }

@@ -8,7 +8,14 @@
         xmlns:t="clr-namespace:JSON_Viewer.Themes"
         mc:Ignorable="d" Icon="{StaticResource Icon}" Background="{DynamicResource WindowBack}" Foreground="{DynamicResource Fore}"
         Title="Piped JSON Viewer" Height="450" Width="800" Initialized="Window_Initialized"
-        IsEnabled="{Binding IsLoading, Converter={conv:NegateBoolConverter}}" AllowDrop="True" Drop="Window_Drop">
+        IsEnabled="{Binding IsLoading, Converter={conv:NegateBoolConverter}}" AllowDrop="True" Drop="Window_Drop"
+        d:DataContext="{d:DesignInstance Type={x:Type local:MainViewModel}, IsDesignTimeCreatable=True}">
+
+    <Window.Resources>
+        <Style TargetType="TextBlock">
+            <Setter Property="Foreground" Value="{DynamicResource Fore}" />
+        </Style>
+    </Window.Resources>
 
     <DockPanel>
         <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" Height="28" Margin="3" HorizontalAlignment="Left">
@@ -35,21 +42,21 @@
             </StatusBarItem>
 
             <StatusBarItem>
-                <TextBlock Text="{Binding Status}" Foreground="{DynamicResource Fore}" />
+                <TextBlock Text="{Binding Status}" />
             </StatusBarItem>
-            
+
             <StatusBarItem>
                 <StatusBarItem.ContextMenu>
                     <ContextMenu>
                         <MenuItem Header="Copy" Click="CopyPath_Click" />
                     </ContextMenu>
                 </StatusBarItem.ContextMenu>
-                
-                <TextBlock Text="{Binding SelectedPath}" Foreground="{DynamicResource Fore}"></TextBlock>
+
+                <TextBlock Text="{Binding SelectedPath}"></TextBlock>
             </StatusBarItem>
 
             <StatusBarItem HorizontalAlignment="Right">
-                <TextBlock Foreground="{DynamicResource Fore}" ToolTip="Memory usage">
+                <TextBlock ToolTip="Memory usage">
                     <Run Text="{Binding UsedMemoryMB}" />
                     MB used
                 </TextBlock>
@@ -104,38 +111,48 @@
 
             <GridSplitter Grid.Column="1" HorizontalAlignment="Stretch" Background="{DynamicResource SplitterColor}" />
 
-            <Border Grid.Column="2" Padding="5" Background="{DynamicResource ToolBack}">
-                <StackPanel Orientation="Vertical">
-                    <TextBlock>Search for text:</TextBlock>
-                    <TextBox FontSize="14" Text="{Binding SearchState.Query, UpdateSourceTrigger=PropertyChanged}"
-                         TextChanged="Query_Changed" Margin="0 5 0 0" KeyDown="Query_KeyDown"></TextBox>
-                    <Button HorizontalAlignment="Right" Margin="0 5 0 0" Width="60" Height="25" Click="Search_Click" IsEnabled="{Binding AutoSearch, Converter={conv:NegateBoolConverter}}">
-                        Search
-                    </Button>
+            <TabControl Grid.Column="2" Padding="5" Background="{DynamicResource ToolBack}" BorderThickness="0">
+                <TabItem Header="Simple search">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock>Search for text:</TextBlock>
+                        <TextBox FontSize="14" Text="{Binding SearchState.Query, UpdateSourceTrigger=PropertyChanged}"
+                                 TextChanged="Query_Changed" Margin="0 5 0 0" KeyDown="Query_KeyDown"></TextBox>
+                        <Button HorizontalAlignment="Right" Margin="0 5 0 0" Width="60" Height="25" Click="Search_Click" IsEnabled="{Binding AutoSearch, Converter={conv:NegateBoolConverter}}">
+                            Search
+                        </Button>
 
-                    <CheckBox IsChecked="{Binding SearchState.SearchInNames}" Checked="UpdateSearchDebounce" Unchecked="UpdateSearchDebounce" Foreground="{DynamicResource Fore}" Margin="0 10 0 0">Search in property names</CheckBox>
-                    <CheckBox IsChecked="{Binding SearchState.SearchInValues}" Checked="UpdateSearchDebounce" Unchecked="UpdateSearchDebounce" Foreground="{DynamicResource Fore}">Search in values</CheckBox>
-                    <CheckBox IsChecked="{Binding SearchState.RegexQuery}" Checked="UpdateSearchDebounce" Unchecked="UpdateSearchDebounce" Foreground="{DynamicResource Fore}">Enable regex</CheckBox>
-                    <CheckBox IsChecked="{Binding AutoSearch}" Checked="UpdateAutoSearch" Unchecked="UpdateAutoSearch" Foreground="{DynamicResource Fore}">Automatically search</CheckBox>
+                        <CheckBox IsChecked="{Binding SearchState.SearchInNames}" Checked="UpdateSearchDebounce" Unchecked="UpdateSearchDebounce" Foreground="{DynamicResource Fore}" Margin="0 10 0 0">Search in property names</CheckBox>
+                        <CheckBox IsChecked="{Binding SearchState.SearchInValues}" Checked="UpdateSearchDebounce" Unchecked="UpdateSearchDebounce" Foreground="{DynamicResource Fore}">Search in values</CheckBox>
+                        <CheckBox IsChecked="{Binding SearchState.RegexQuery}" Checked="UpdateSearchDebounce" Unchecked="UpdateSearchDebounce" Foreground="{DynamicResource Fore}">Enable regex</CheckBox>
+                        <CheckBox IsChecked="{Binding AutoSearch}" Checked="UpdateAutoSearch" Unchecked="UpdateAutoSearch" Foreground="{DynamicResource Fore}">Automatically search</CheckBox>
 
-                    <StackPanel Orientation="Vertical" Visibility="{Binding SearchState.FoundPaths, Converter={local:NotNullToVisibilityConverter}}">
-                        <TextBlock Visibility="{Binding SearchState.AnyMatches, Converter={local:BoolToVisibilityConverter}}">
-                        Match
-                        <Run Text="{Binding SearchState.CurrentMatchIndexPlusOne, Mode=OneWay}" />
-                        /
-                        <Run Text="{Binding SearchState.FoundPaths.Length, Mode=OneWay}" />
-                        </TextBlock>
-                        <TextBlock Visibility="{Binding SearchState.AnyMatches, Converter={local:BoolToVisibilityConverter}, ConverterParameter=negate}">
-                        No matches found
-                        </TextBlock>
+                        <StackPanel Orientation="Vertical" Visibility="{Binding SearchState.FoundPaths, Converter={local:NotNullToVisibilityConverter}}">
+                            <TextBlock Visibility="{Binding SearchState.AnyMatches, Converter={local:BoolToVisibilityConverter}}">
+                                Match
+                                <Run Text="{Binding SearchState.CurrentMatchIndexPlusOne, Mode=OneWay}" />
+                                /
+                                <Run Text="{Binding SearchState.FoundPaths.Length, Mode=OneWay}" />
+                            </TextBlock>
+                            <TextBlock Visibility="{Binding SearchState.AnyMatches, Converter={local:BoolToVisibilityConverter}, ConverterParameter=negate}">
+                                No matches found
+                            </TextBlock>
 
-                        <Button Margin="0 5 0 3" Click="PreviousMatch_Click" IsEnabled="{Binding SearchState.CanGoToPreviousMatch}">Previous</Button>
-                        <Button Margin="0 0 0 10" Click="NextMatch_Click" IsEnabled="{Binding SearchState.CanGoToNextMatch}">Next</Button>
+                            <Button Margin="0 5 0 3" Click="PreviousMatch_Click" IsEnabled="{Binding SearchState.CanGoToPreviousMatch}">Previous</Button>
+                            <Button Margin="0 0 0 10" Click="NextMatch_Click" IsEnabled="{Binding SearchState.CanGoToNextMatch}">Next</Button>
 
-                        <Button Click="ClearSearch_Click">Clear search results</Button>
+                            <Button Click="ClearSearch_Click">Clear search results</Button>
+                        </StackPanel>
                     </StackPanel>
-                </StackPanel>
-            </Border>
+                </TabItem>
+                
+                <TabItem Header="Query">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock>Query (C#):</TextBlock>
+                        <TextBox Margin="0 5 0 0" Text="{Binding QueryPretty, UpdateSourceTrigger=PropertyChanged}"></TextBox>
+                        <Button Margin="0 5 0 0" HorizontalAlignment="Right" Padding="5" Click="ExecuteQuery_Click">Execute</Button>
+                    </StackPanel>
+                </TabItem>
+            </TabControl>
         </Grid>
     </DockPanel>
 </Window>
