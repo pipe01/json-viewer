@@ -107,7 +107,7 @@ namespace JSON_Viewer
             using var file = File.OpenRead(path);
 
             var tab = new TabViewModel();
-            tab.TabName = System.IO.Path.GetFileName(path);
+            tab.TabName = Path.GetFileName(path);
             tab.FilePath = Path.GetFullPath(path);
 
             if (file.Length > 50 * 1024 * 1024)
@@ -116,6 +116,7 @@ namespace JSON_Viewer
             await Load(file, tab);
 
             ViewModel.Tabs.Add(tab);
+            ViewModel.SelectedTab = tab;
         }
 
         private async Task Load(Stream data, TabViewModel tab)
@@ -450,6 +451,7 @@ namespace JSON_Viewer
                 await Load(mem, tab);
 
                 ViewModel.Tabs.Add(tab);
+                ViewModel.SelectedTab = tab;
             }
         }
 
@@ -457,19 +459,23 @@ namespace JSON_Viewer
         {
             var results = await JsonQueryExecutor.RunQuery(CurrentTab.RootContainer, ViewModel.QueryPretty);
 
-            CurrentTab.Items.Clear();
+            var tab = new TabViewModel();
+            tab.TabName = "Query results - " + CurrentTab.TabName;
 
             if (results is JsonContainer elem)
             {
-                CurrentTab.Items.Add(elem);
+                tab.Items.Add(elem);
             }
             else if (results is IEnumerable<JsonContainer> elems)
             {
                 foreach (var item in elems)
                 {
-                    CurrentTab.Items.Add(item);
+                    tab.Items.Add(item);
                 }
             }
+
+            ViewModel.Tabs.Add(tab);
+            ViewModel.SelectedTab = tab;
         }
     }
 }

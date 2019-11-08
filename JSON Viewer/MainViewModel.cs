@@ -32,7 +32,11 @@ namespace JSON_Viewer
         public ThemeManager ThemeManager { get; set; }
 
         public int SelectedTabIndex { get; set; }
-        public TabViewModel SelectedTab => Tabs[SelectedTabIndex];
+        public TabViewModel SelectedTab
+        {
+            get => Tabs[SelectedTabIndex];
+            set => SelectedTabIndex = Tabs.IndexOf(value);
+        }
 
         public int UsedMemoryMB { get; set; }
         public string Status { get; set; } = "";
