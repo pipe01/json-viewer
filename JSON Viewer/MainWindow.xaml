@@ -185,10 +185,10 @@
                     </StackPanel>
                 </TabItem>
                 
-                <TabItem Header="Query">
+                <TabItem Header="Query" IsEnabled="{Binding CurrentTab.RootElement, Converter={conv:NullToBoolConverter}, ConverterParameter=negate}">
                     <StackPanel Orientation="Vertical">
                         <TextBlock>Query (C#):</TextBlock>
-                        <TextBox Margin="0 5 0 0" Text="{Binding QueryPretty, UpdateSourceTrigger=PropertyChanged}"
+                        <TextBox Margin="0 5 0 0" Text="{Binding Query, UpdateSourceTrigger=PropertyChanged}"
                                  FontFamily="Consolas" FontSize="14" OverridesDefaultStyle="True" SnapsToDevicePixels="True">
                             <TextBox.Template>
                                 <ControlTemplate TargetType="TextBox">

@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text.Json;
@@ -17,6 +18,22 @@ namespace JSON_Viewer
 
         public bool IsObject => Element.ValueKind == JsonValueKind.Object || Element.ValueKind == JsonValueKind.Array;
         public bool IsBoolean => Element.ValueKind == JsonValueKind.True || Element.ValueKind == JsonValueKind.False;
+
+        public string AsString => Element.ValueKind == JsonValueKind.String
+                ? Element.GetString()
+                : Element.ValueKind == JsonValueKind.Null
+                    ? (string)null
+                    : throw new InvalidOperationException($"Tried to convert a value of type {Element.ValueKind} to a string");
+
+        public float AsNumber => Element.TryGetSingle(out var f)
+                ? f
+                : throw new InvalidOperationException($"Tried to convert a value of type {Element.ValueKind} to a number");
+
+        public bool AsBool => Element.ValueKind == JsonValueKind.True
+                ? true
+                : Element.ValueKind == JsonValueKind.False
+                    ? false
+                    : throw new InvalidOperationException($"Tried to convert a value of type {Element.ValueKind} to a boolean");
 
         int IReadOnlyCollection<JsonContainer>.Count => this.Children.Length;
 
@@ -62,17 +79,36 @@ namespace JSON_Viewer
             }
         }
 
-        public JsonContainer this[string propertyName]
+        public JsonContainer this[string query]
         {
             get
             {
+                if (Element.ValueKind != JsonValueKind.Object)
+                    throw new InvalidOperationException($"Tried to string-index a value of type {Element.ValueKind}");
+
+                if (query.Contains('.'))
+                {
+                    return this.Query(query);
+                }
+
                 foreach (var item in Children)
                 {
-                    if (item.PropertyName == propertyName)
+                    if (item.PropertyName == query)
                         return item;
                 }
 
-                throw new System.Exception();
+                throw new KeyNotFoundException();
+            }
+        }
+
+        public JsonContainer this[int index]
+        {
+            get
+            {
+                if (Element.ValueKind != JsonValueKind.Array)
+                    throw new InvalidOperationException($"Tried to index a value of type {Element.ValueKind}");
+
+                return Children[index];
             }
         }
 
@@ -85,5 +121,11 @@ namespace JSON_Viewer
         {
             return ((IReadOnlyCollection<JsonContainer>)this.Children).GetEnumerator();
         }
+
+        public static implicit operator float(JsonContainer json) => json.AsNumber;
+
+        public static implicit operator string(JsonContainer json) => json.AsString;
+
+        public static implicit operator bool(JsonContainer json) => json.AsBool;
     }
 }

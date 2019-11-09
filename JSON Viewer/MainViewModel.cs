@@ -12,21 +12,6 @@ namespace JSON_Viewer
 
         public ObservableCollection<TabViewModel> Tabs { get; set; } = new ObservableCollection<TabViewModel>();
 
-        private const string QueryPrefix = "";
-        public string QueryPretty
-        {
-            get => QueryPrefix + Query;
-            set
-            {
-                if (value.Length > QueryPrefix.Length)
-                    Query = value.Substring(QueryPrefix.Length);
-                else
-                    Query = "";
-
-                Debug.WriteLine(Query);
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(QueryPrefix)));
-            }
-        }
         public string Query { get; set; }
 
         public ThemeManager ThemeManager { get; set; }

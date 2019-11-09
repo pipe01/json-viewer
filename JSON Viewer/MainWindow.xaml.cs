@@ -457,7 +457,7 @@ namespace JSON_Viewer
 
         private async void ExecuteQuery_Click(object sender, RoutedEventArgs e)
         {
-            var results = await JsonQueryExecutor.RunQuery(CurrentTab.RootContainer, ViewModel.QueryPretty);
+            var results = await JsonQueryExecutor.RunQuery(CurrentTab.RootContainer, "root => " + ViewModel.Query);
 
             var tab = new TabViewModel();
             tab.TabName = "Query results - " + CurrentTab.TabName;
@@ -472,6 +472,11 @@ namespace JSON_Viewer
                 {
                     tab.Items.Add(item);
                 }
+            }
+            else
+            {
+                var el = JsonDocument.Parse(JsonSerializer.Serialize(results)).RootElement;
+                tab.Items.Add(new JsonContainer(el, ""));
             }
 
             ViewModel.Tabs.Add(tab);

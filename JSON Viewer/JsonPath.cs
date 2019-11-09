@@ -1,10 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Text.Json;
 using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 
 namespace JSON_Viewer
 {
@@ -12,7 +7,7 @@ namespace JSON_Viewer
     {
         private static readonly Regex ArrayAccessPattern = new Regex(@"(?<=\[)\d+(?=\])");
 
-        public static JsonElement Query(this JsonElement element, string path)
+        public static JsonContainer Query(this JsonContainer element, string path)
         {
             var parts = path.Split(new[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
 
@@ -22,19 +17,11 @@ namespace JSON_Viewer
 
                 if (arrayAccess.Success)
                 {
-                    if (element.ValueKind == JsonValueKind.Array)
-                        element = element.EnumerateArray().ElementAt(int.Parse(arrayAccess.Value));
-                    else
-                        throw new FormatException("tried to index a non-array");
+                    element = element[int.Parse(arrayAccess.Value)];
                 }
                 else
                 {
-                    var prop = element.EnumerateObject().SingleOrDefault(o => o.Name == parts[i]);
-
-                    if (prop.Name == null)
-                        throw new InvalidOperationException($"cannot find property '{parts[i]}'");
-
-                    element = prop.Value;
+                    element = element[parts[i]];
                 }
             }
 
