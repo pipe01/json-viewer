@@ -13,13 +13,23 @@
     <SolidColorBrush x:Key="ToolbarBtnBack" Color="White" />
     <SolidColorBrush x:Key="TreeSelected" Color="Yellow" />
     <SolidColorBrush x:Key="StatusBarBack" Color="Transparent" />
-    <SolidColorBrush x:Key="PropertyNameFore" Color="OrangeRed" />
-    <SolidColorBrush x:Key="PropertyValueFore" Color="RoyalBlue" />
     <SolidColorBrush x:Key="LinkFore" Color="RoyalBlue" />
     <SolidColorBrush x:Key="SplitterColor" Color="LightGray" />
+
+    <SolidColorBrush x:Key="PropertyNameFore" Color="#2E75B6" />
+    <SolidColorBrush x:Key="PropertyValueFore" Color="Black" />
+    <SolidColorBrush x:Key="BooleanFore" Color="#0000FF" />
+    <SolidColorBrush x:Key="NumberFore" Color="#000000" />
+    <SolidColorBrush x:Key="StringFore" Color="#A31515" />
+    <SolidColorBrush x:Key="NullFore" Color="#0000FF" />
+
     <SolidColorBrush x:Key="TreeTabColor" Color="LightGray" />
+    <SolidColorBrush x:Key="TreeTabBorderColor" Color="LightGray" />
     <SolidColorBrush x:Key="TreeTabSelectedColor" Color="LightGray" />
     <SolidColorBrush x:Key="TreeTabHoverColor" Color="LightGray" />
     <SolidColorBrush x:Key="TreeTabHeaderColor" Color="Black" />
+
+    <SolidColorBrush x:Key="TextBoxBorder" Color="Gray" />
+    <SolidColorBrush x:Key="TextBoxBack" Color="White" />
 
 </ResourceDictionary>

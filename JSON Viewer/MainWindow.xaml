@@ -6,6 +6,7 @@
         xmlns:local="clr-namespace:JSON_Viewer"
         xmlns:conv="clr-namespace:JSON_Viewer.Converters"
         xmlns:t="clr-namespace:JSON_Viewer.Themes"
+        xmlns:j="clr-namespace:System.Text.Json;assembly=System.Text.Json"
         mc:Ignorable="d" Icon="{StaticResource Icon}" Background="{DynamicResource WindowBack}" Foreground="{DynamicResource Fore}"
         Title="Piped JSON Viewer" Height="450" Width="800" Initialized="Window_Initialized"
         IsEnabled="{Binding IsLoading, Converter={conv:NegateBoolConverter}}" AllowDrop="True" Drop="Window_Drop"
@@ -15,6 +16,10 @@
         <Style TargetType="TextBlock">
             <Setter Property="Foreground" Value="{DynamicResource Fore}" />
         </Style>
+
+        <conv:JsonElementToValueColor x:Key="JsonColorConverter" ObjectBrush="{DynamicResource PropertyValueFore}"
+                                      NullBrush="{DynamicResource NullFore}" StringBrush="{DynamicResource StringFore}"
+                                      NumberBrush="{DynamicResource NumberFore}" BooleanBrush="{DynamicResource BooleanFore}" />
     </Window.Resources>
 
     <DockPanel>
@@ -112,7 +117,29 @@
                                 <HierarchicalDataTemplate DataType="{x:Type local:JsonContainer}" ItemsSource="{Binding Path=., Converter={conv:JsonElementToChildrenConverter}}">
                                     <StackPanel Orientation="Horizontal">
                                         <TextBlock Text="{Binding Path=., Converter={conv:JsonElementToStringConverter}, ConverterParameter=name}" Foreground="{DynamicResource PropertyNameFore}"></TextBlock>
-                                        <TextBlock Text="{Binding Path=., Converter={conv:JsonElementToStringConverter}}" Foreground="{DynamicResource PropertyValueFore}"></TextBlock>
+                                        <TextBlock Text="{Binding Path=., Converter={conv:JsonElementToStringConverter}}">
+                                            <TextBlock.Style>
+                                                <Style TargetType="TextBlock">
+                                                    <Style.Triggers>
+                                                        <DataTrigger Binding="{Binding Element.ValueKind, Mode=OneWay}" Value="{x:Static j:JsonValueKind.String}">
+                                                            <Setter Property="Foreground" Value="{DynamicResource StringFore}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Element.ValueKind, Mode=OneWay}" Value="{x:Static j:JsonValueKind.Number}">
+                                                            <Setter Property="Foreground" Value="{DynamicResource NumberFore}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding Element.ValueKind, Mode=OneWay}" Value="{x:Static j:JsonValueKind.Null}">
+                                                            <Setter Property="Foreground" Value="{DynamicResource NullFore}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsObject, Mode=OneWay}" Value="True">
+                                                            <Setter Property="Foreground" Value="{DynamicResource PropertyValueFore}" />
+                                                        </DataTrigger>
+                                                        <DataTrigger Binding="{Binding IsBoolean, Mode=OneWay}" Value="True">
+                                                            <Setter Property="Foreground" Value="{DynamicResource BooleanFore}" />
+                                                        </DataTrigger>
+                                                    </Style.Triggers>
+                                                </Style>
+                                            </TextBlock.Style>
+                                        </TextBlock>
                                     </StackPanel>
                                 </HierarchicalDataTemplate>
                             </TreeView.ItemTemplate>
@@ -162,7 +189,18 @@
                     <StackPanel Orientation="Vertical">
                         <TextBlock>Query (C#):</TextBlock>
                         <TextBox Margin="0 5 0 0" Text="{Binding QueryPretty, UpdateSourceTrigger=PropertyChanged}"
-                                 FontFamily="Consolas" FontSize="14"></TextBox>
+                                 FontFamily="Consolas" FontSize="14" OverridesDefaultStyle="True" SnapsToDevicePixels="True">
+                            <TextBox.Template>
+                                <ControlTemplate TargetType="TextBox">
+                                    <Border Background="{DynamicResource TextBoxBack}" BorderBrush="{DynamicResource TextBoxBorder}" BorderThickness="1">
+                                        <DockPanel>
+                                            <TextBlock DockPanel.Dock="Left" Margin="0 0 3 0">root =></TextBlock>
+                                            <ScrollViewer DockPanel.Dock="Left" x:Name="PART_ContentHost"/>
+                                        </DockPanel>
+                                    </Border>
+                                </ControlTemplate>
+                            </TextBox.Template>
+                        </TextBox>
                         <Button Margin="0 5 0 0" HorizontalAlignment="Right" Padding="5" Click="ExecuteQuery_Click">Execute</Button>
                     </StackPanel>
                 </TabItem>

@@ -6,7 +6,7 @@
     <Application.Resources>
         <ResourceDictionary>
             <ResourceDictionary.MergedDictionaries>
-                <ResourceDictionary Source="Themes/Light.xaml" />
+                <ResourceDictionary Source="Themes/Dark.xaml" />
             </ResourceDictionary.MergedDictionaries>
 
             <BitmapImage x:Key="Open" UriSource="Images/open.png" />
@@ -91,6 +91,19 @@
                         </Setter>
                     </Style>
                 </Style.Resources>
+            </Style>
+
+            <Style TargetType="TextBox">
+                <Setter Property="BorderBrush" Value="{DynamicResource TextBoxBorder}" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="Background" Value="{DynamicResource TextBoxBack}" />
+                <Setter Property="Foreground" Value="{DynamicResource Fore}" />
+
+                <Style.Triggers>
+                    <Trigger Property="IsMouseOver" Value="True">
+                        <Setter Property="BorderBrush" Value="Magenta" />
+                    </Trigger>
+                </Style.Triggers>
             </Style>
         </ResourceDictionary>
     </Application.Resources>

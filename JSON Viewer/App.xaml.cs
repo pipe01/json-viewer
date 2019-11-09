@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Configuration;
 using System.Data;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
@@ -22,6 +23,9 @@ namespace JSON_Viewer
 
         private void Current_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
         {
+            if (Debugger.IsAttached)
+                return;
+
             MessageBox.Show(e.Exception.ToString(), "Exception", MessageBoxButton.OK, MessageBoxImage.Error);
         }
     }

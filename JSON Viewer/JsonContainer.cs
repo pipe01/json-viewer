@@ -15,6 +15,9 @@ namespace JSON_Viewer
         public bool IsExpanded { get; set; }
         public bool IsSelected { get; set; }
 
+        public bool IsObject => Element.ValueKind == JsonValueKind.Object || Element.ValueKind == JsonValueKind.Array;
+        public bool IsBoolean => Element.ValueKind == JsonValueKind.True || Element.ValueKind == JsonValueKind.False;
+
         int IReadOnlyCollection<JsonContainer>.Count => this.Children.Length;
 
         public event PropertyChangedEventHandler PropertyChanged;

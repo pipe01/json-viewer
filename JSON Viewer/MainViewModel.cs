@@ -12,7 +12,7 @@ namespace JSON_Viewer
 
         public ObservableCollection<TabViewModel> Tabs { get; set; } = new ObservableCollection<TabViewModel>();
 
-        private const string QueryPrefix = "root => ";
+        private const string QueryPrefix = "";
         public string QueryPretty
         {
             get => QueryPrefix + Query;
@@ -34,7 +34,7 @@ namespace JSON_Viewer
         public int SelectedTabIndex { get; set; }
         public TabViewModel SelectedTab
         {
-            get => Tabs[SelectedTabIndex];
+            get => SelectedTabIndex < 0 ? (Tabs.Count > 0 ? Tabs[0] : null) : Tabs[SelectedTabIndex];
             set => SelectedTabIndex = Tabs.IndexOf(value);
         }
 
